@@ -45,6 +45,7 @@ func (w window) String() string {
 
 func winName(X *xgb.Conn, root xproto.Window) (window, bool) {
 	activeAtom := atom(X, "_NET_ACTIVE_WINDOW")
+	netNameAtom := atom(X, "_NET_WM_NAME")
 	nameAtom := atom(X, "WM_NAME")
 	classAtom := atom(X, "WM_CLASS")
 
@@ -58,7 +59,10 @@ func winName(X *xgb.Conn, root xproto.Window) (window, bool) {
 
 	spy(X, windowId)
 
-	name := prop(X, windowId, nameAtom)
+	name := prop(X, windowId, netNameAtom)
+	if string(name.Value) == "" {
+		name = prop(X, windowId, nameAtom)
+	}
 	class := prop(X, windowId, classAtom)
 
 	w := window{
