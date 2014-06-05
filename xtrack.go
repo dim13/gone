@@ -120,16 +120,16 @@ func main() {
 			if _, everr := X.WaitForEvent(); everr != nil {
 				log.Fatal(err)
 			}
-			if name, ok := winName(X, root); ok {
-				t, ok := tracker[name]
+			if win, ok := winName(X, root); ok {
+				t, ok := tracker[win]
 				if ok {
 					t.Spent += time.Since(t.Start)
 					t.Start = time.Now()
-					tracker[name] = t
+					tracker[win] = t
 				} else {
 					t = track{Start: time.Now()}
 				}
-				tracker[name] = t
+				tracker[win] = t
 			}
 		}
 	}()
@@ -138,7 +138,7 @@ func main() {
 		for n, t := range tracker {
 			log.Println(n, t)
 		}
-		time.Sleep(time.Second)
+		time.Sleep(5 * time.Second)
 		fmt.Println("")
 	}
 
