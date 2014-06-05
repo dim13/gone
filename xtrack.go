@@ -9,8 +9,16 @@ import (
 )
 
 type window struct {
-	Class []string
+	Class string
 	Name  string
+}
+
+func getClass(b []byte) string {
+	i := bytes.IndexByte(b, 0)
+	if i == -1 {
+		return ""
+	}
+	return string(b[:i])
 }
 
 func asciizToString(b []byte) (s []string) {
@@ -40,7 +48,7 @@ func prop(X *xgb.Conn, w xproto.Window, a *xproto.InternAtomReply) *xproto.GetPr
 }
 
 func (w window) String() string {
-	return fmt.Sprintf("%s (%s) %s", w.Class[0], w.Class[1], w.Name)
+	return fmt.Sprintf("%s: %s", w.Class, w.Name)
 }
 
 func winName(X *xgb.Conn, root xproto.Window) (window, bool) {
@@ -66,7 +74,7 @@ func winName(X *xgb.Conn, root xproto.Window) (window, bool) {
 	class := prop(X, windowId, classAtom)
 
 	w := window{
-		Class: asciizToString(class.Value),
+		Class: getClass(class.Value),
 		Name:  string(name.Value),
 	}
 
