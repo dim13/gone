@@ -6,11 +6,27 @@ import (
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/xproto"
 	"log"
+	"time"
 )
+
+type tracker map[window]track
+
+type track struct {
+	Start time.Time
+	Spent time.Duration
+}
 
 type window struct {
 	Class string
 	Name  string
+}
+
+func (t track) String() string {
+	return fmt.Sprint(t.Spent)
+}
+
+func (w window) String() string {
+	return fmt.Sprintf("%s: %s", w.Class, w.Name)
 }
 
 func getClass(b []byte) string {
@@ -45,10 +61,6 @@ func prop(X *xgb.Conn, w xproto.Window, a *xproto.InternAtomReply) *xproto.GetPr
 		log.Fatal(err)
 	}
 	return p
-}
-
-func (w window) String() string {
-	return fmt.Sprintf("%s: %s", w.Class, w.Name)
 }
 
 func winName(X *xgb.Conn, root xproto.Window) (window, bool) {
@@ -92,6 +104,8 @@ func spy(X *xgb.Conn, w xproto.Window) {
 }
 
 func main() {
+	tracker := make(tracker)
+
 	X, err := xgb.NewConn()
 	if err != nil {
 		log.Fatal(err)
@@ -101,12 +115,31 @@ func main() {
 	root := rootWin(X)
 	spy(X, root)
 
+	go func() {
+		for {
+			if _, everr := X.WaitForEvent(); everr != nil {
+				log.Fatal(err)
+			}
+			if name, ok := winName(X, root); ok {
+				t, ok := tracker[name]
+				if ok {
+					t.Spent += time.Since(t.Start)
+					t.Start = time.Now()
+					tracker[name] = t
+				} else {
+					t = track{Start: time.Now()}
+				}
+				tracker[name] = t
+			}
+		}
+	}()
+
 	for {
-		if _, everr := X.WaitForEvent(); everr != nil {
-			log.Fatal(err)
+		for n, t := range tracker {
+			log.Println(n, t)
 		}
-		if name, ok := winName(X, root); ok {
-			log.Println(name)
-		}
+		time.Sleep(time.Second)
+		fmt.Println("")
 	}
+
 }
