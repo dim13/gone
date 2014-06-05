@@ -135,11 +135,20 @@ func main() {
 	}()
 
 	for {
+		var total time.Duration
+		classtotal := make(map[string]time.Duration)
 		for n, t := range tracker {
 			log.Println(n, t)
+			total += t.Spent
+			classtotal[n.Class] += t.Spent
 		}
-		time.Sleep(5 * time.Second)
 		fmt.Println("")
+		for k, v := range classtotal {
+			fmt.Println(k, v)
+		}
+		fmt.Println("Total:", total)
+		fmt.Println("")
+		time.Sleep(5 * time.Second)
 	}
 
 }
