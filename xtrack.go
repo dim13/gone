@@ -103,8 +103,7 @@ func spy(X *xgb.Conn, w xproto.Window) {
 		[]uint32{xproto.EventMaskPropertyChange})
 }
 
-func main() {
-	tracker := make(tracker)
+func collect(tracks tracker) {
 	var prev *track
 
 	X, err := xgb.NewConn()
@@ -116,28 +115,28 @@ func main() {
 	root := rootWin(X)
 	spy(X, root)
 
-	go func() {
-		for {
-			if _, everr := X.WaitForEvent(); everr != nil {
-				log.Fatal(err)
-			}
-			if prev != nil {
-				prev.Spent += time.Since(prev.Start)
-			}
-			if win, ok := winName(X, root); ok {
-				if _, ok := tracker[win]; !ok {
-					tracker[win] = new(track)
-				}
-				tracker[win].Start = time.Now()
-				prev = tracker[win]
-			}
+	for {
+		if _, everr := X.WaitForEvent(); everr != nil {
+			log.Fatal(err)
 		}
-	}()
+		if prev != nil {
+			prev.Spent += time.Since(prev.Start)
+		}
+		if win, ok := winName(X, root); ok {
+			if _, ok := tracks[win]; !ok {
+				tracks[win] = new(track)
+			}
+			tracks[win].Start = time.Now()
+			prev = tracks[win]
+		}
+	}
+}
 
+func display(tracks tracker) {
 	for {
 		var total time.Duration
 		classtotal := make(map[string]time.Duration)
-		for n, t := range tracker {
+		for n, t := range tracks {
 			log.Println(n, t)
 			total += t.Spent
 			classtotal[n.Class] += t.Spent
@@ -150,5 +149,10 @@ func main() {
 		fmt.Println("")
 		time.Sleep(5 * time.Second)
 	}
+}
 
+func main() {
+	tracks := make(tracker)
+	go collect(tracks)
+	display(tracks)
 }
