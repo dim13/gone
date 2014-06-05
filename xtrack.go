@@ -50,7 +50,7 @@ func asciizToString(b []byte) (s []string) {
 func atom(X *xgb.Conn, aname string) *xproto.InternAtomReply {
 	a, err := xproto.InternAtom(X, true, uint16(len(aname)), aname).Reply()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("atom", err)
 	}
 	return a
 }
@@ -58,7 +58,7 @@ func atom(X *xgb.Conn, aname string) *xproto.InternAtomReply {
 func prop(X *xgb.Conn, w xproto.Window, a *xproto.InternAtomReply) *xproto.GetPropertyReply {
 	p, err := xproto.GetProperty(X, false, w, a.Atom, xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("property", err)
 	}
 	return p
 }
@@ -108,7 +108,7 @@ func collect(tracks tracker) {
 
 	X, err := xgb.NewConn()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("xgb", err)
 	}
 	defer X.Close()
 
@@ -117,7 +117,7 @@ func collect(tracks tracker) {
 
 	for {
 		if _, everr := X.WaitForEvent(); everr != nil {
-			log.Fatal(err)
+			log.Fatal("wait for event", err)
 		}
 		if prev != nil {
 			prev.Spent += time.Since(prev.Start)
