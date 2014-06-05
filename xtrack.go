@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type tracker map[window]track
+type tracker map[window]*track
 
 type track struct {
 	Start time.Time
@@ -105,6 +105,7 @@ func spy(X *xgb.Conn, w xproto.Window) {
 
 func main() {
 	tracker := make(tracker)
+	var prev *track
 
 	X, err := xgb.NewConn()
 	if err != nil {
@@ -120,16 +121,15 @@ func main() {
 			if _, everr := X.WaitForEvent(); everr != nil {
 				log.Fatal(err)
 			}
+			if prev != nil {
+				prev.Spent += time.Since(prev.Start)
+			}
 			if win, ok := winName(X, root); ok {
-				t, ok := tracker[win]
-				if ok {
-					t.Spent += time.Since(t.Start)
-					t.Start = time.Now()
-					tracker[win] = t
-				} else {
-					t = track{Start: time.Now()}
+				if _, ok := tracker[win]; !ok {
+					tracker[win] = new(track)
 				}
-				tracker[win] = t
+				tracker[win].Start = time.Now()
+				prev = tracker[win]
 			}
 		}
 	}()
