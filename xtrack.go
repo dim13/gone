@@ -51,7 +51,7 @@ func asciizToString(b []byte) (s []string) {
 func atom(X *xgb.Conn, aname string) *xproto.InternAtomReply {
 	a, err := xproto.InternAtom(X, true, uint16(len(aname)), aname).Reply()
 	if err != nil {
-		log.Fatal("atom", err)
+		log.Fatal("atom: ", err)
 	}
 	return a
 }
@@ -59,7 +59,7 @@ func atom(X *xgb.Conn, aname string) *xproto.InternAtomReply {
 func prop(X *xgb.Conn, w xproto.Window, a *xproto.InternAtomReply) *xproto.GetPropertyReply {
 	p, err := xproto.GetProperty(X, false, w, a.Atom, xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
 	if err != nil {
-		log.Fatal("property", err)
+		log.Fatal("property: ", err)
 	}
 	return p
 }
@@ -118,13 +118,13 @@ func (t tracker) Update(X *xgb.Conn, w xproto.Window) (prev *track) {
 func collect(tracks tracker) {
 	X, err := xgb.NewConn()
 	if err != nil {
-		log.Fatal("xgb", err)
+		log.Fatal("xgb: ", err)
 	}
 	defer X.Close()
 
 	err = screensaver.Init(X)
 	if err != nil {
-		log.Fatal("screensaver", err)
+		log.Fatal("screensaver: ", err)
 	}
 
 	root := rootWin(X)
@@ -138,7 +138,7 @@ func collect(tracks tracker) {
 	for {
 		ev, everr := X.WaitForEvent()
 		if everr != nil {
-			log.Fatal("wait for event", everr)
+			log.Fatal("wait for event: ", everr)
 		}
 		switch event := ev.(type) {
 		case xproto.PropertyNotifyEvent:
