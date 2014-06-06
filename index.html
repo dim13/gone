@@ -5,11 +5,25 @@
 		<meta http-equiv="refresh" content="5">
 	</head>
 	<body>
-		<h1>Total {{.Total}} {{if .Zzz}}Zzz&hellip;{{end}}</h1>
+		<h1>{{.Title}}{{if .Zzz}} Zzz&hellip;{{end}}</h1>
+		<h2>Classes</h2>
+		<table>
+		<tr>
+			<td><a href="/">All</a></td>
+			<td>{{.Total}}</td>
+		</tr>
+		{{range .Class}}
+		<tr>
+			<td><a href="/{{.Class}}">{{.Class}}<a></td>
+			<td>{{.Time}}</td>
+		</tr>
+		{{end}}
+		</table>`
+		<h2>Individually</h2>
 		<table>
 		{{range .Tracks}}
 		<tr>
-			<td>{{.Class}}</td>
+			<td><a href="/{{.Class}}">{{.Class}}<a></td>
 			<td>{{.Name}}</td>
 			<td>{{.Time}}</td>
 		</tr>

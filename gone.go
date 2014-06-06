@@ -219,6 +219,7 @@ func (t Tracker) store(fname string) {
 type Index struct {
 	Title  string
 	Tracks Tracks
+	Class  Tracks
 	Total  time.Duration
 	Zzz    bool
 }
@@ -239,14 +240,25 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	var i Index
 	i.Title = "Time Tracker"
 	i.Zzz = zzz
+	class := r.URL.Path[1:]
+
+	classtotal := make(map[string]time.Duration)
 
 	for k, v := range tracks {
+		classtotal[k.Class] += v.Spent
+		i.Total += v.Spent
+		if class != "" && class != k.Class {
+			continue
+		}
 		i.Tracks = append(i.Tracks, track{
 			Class: k.Class,
 			Name:  k.Name,
 			Time:  v.Spent})
-		i.Total += v.Spent
 	}
+	for k, v := range classtotal {
+		i.Class = append(i.Class, track{Class: k, Time: v})
+	}
+	sort.Sort(sort.Reverse(i.Class))
 	sort.Sort(sort.Reverse(i.Tracks))
 	err := tmpl.Execute(w, i)
 	if err != nil {
