@@ -7,9 +7,11 @@ import (
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/screensaver"
 	"github.com/BurntSushi/xgb/xproto"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 	"time"
 )
@@ -233,8 +235,38 @@ func (t Tracker) store(fname string) {
 	}
 }
 
+type Index struct {
+	Title  string
+	Tracks Tracks
+}
+
+type Tracks []track
+
+type track struct {
+	Class string
+	Name  string
+	Time  time.Duration
+}
+
+func (t Tracks) Len() int           { return len(t) }
+func (t Tracks) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
+func (t Tracks) Less(i, j int) bool { return t[i].Time < t[j].Time }
+
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, tracks)
+	var i Index
+	i.Title = "Time Tracker"
+
+	for k, v := range tracks {
+		i.Tracks = append(i.Tracks, track{
+			Class: k.Class,
+			Name:  k.Name,
+			Time:  v.Spent})
+	}
+	sort.Sort(sort.Reverse(i.Tracks))
+	err := tmpl.Execute(w, i)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 const (
@@ -242,11 +274,12 @@ const (
 	file = "dump.gob"
 )
 
-var tracks = make(Tracker)
+var (
+	tracks = make(Tracker)
+	tmpl   = template.Must(template.ParseFiles("index.html"))
+)
 
 func main() {
-	//tracks := make(Tracker)
-
 	tracks.load(file)
 	go tracks.collect()
 	go func() {
