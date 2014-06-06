@@ -7,6 +7,7 @@ import (
 	"github.com/BurntSushi/xgb/screensaver"
 	"github.com/BurntSushi/xgb/xproto"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -22,90 +23,91 @@ type window struct {
 	Name  string
 }
 
+type xorg struct {
+	X           *xgb.Conn
+	root        xproto.Window
+	activeAtom  *xproto.InternAtomReply
+	netNameAtom *xproto.InternAtomReply
+	nameAtom    *xproto.InternAtomReply
+	classAtom   *xproto.InternAtomReply
+}
+
 func (t track) String() string {
 	return fmt.Sprint(t.Spent)
 }
 
 func (w window) String() string {
-	return fmt.Sprintf("%s: %s", w.Class, w.Name)
+	return fmt.Sprintf("%s %s", w.Class, w.Name)
 }
 
-func getClass(b []byte) string {
-	i := bytes.IndexByte(b, 0)
-	if i == -1 {
-		return ""
-	}
-	return string(b[:i])
-}
-
-func asciizToString(b []byte) (s []string) {
-	for _, x := range bytes.Split(b, []byte{0}) {
-		s = append(s, string(x))
-	}
-	if len(s) > 0 && s[len(s)-1] == "" {
-		s = s[:len(s)-1]
-	}
-	return
-}
-
-func atom(X *xgb.Conn, aname string) *xproto.InternAtomReply {
-	a, err := xproto.InternAtom(X, true, uint16(len(aname)), aname).Reply()
+func (x xorg) atom(aname string) *xproto.InternAtomReply {
+	a, err := xproto.InternAtom(x.X, true, uint16(len(aname)), aname).Reply()
 	if err != nil {
 		log.Fatal("atom: ", err)
 	}
 	return a
 }
 
-func prop(X *xgb.Conn, w xproto.Window, a *xproto.InternAtomReply) *xproto.GetPropertyReply {
-	p, err := xproto.GetProperty(X, false, w, a.Atom, xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
-	if err != nil {
-		log.Fatal("property: ", err)
-	}
-	return p
+func (x xorg) property(w xproto.Window, a *xproto.InternAtomReply) (*xproto.GetPropertyReply, error) {
+	return xproto.GetProperty(x.X, false, w, a.Atom,
+		xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
 }
 
-func winName(X *xgb.Conn, root xproto.Window) (window, bool) {
-	activeAtom := atom(X, "_NET_ACTIVE_WINDOW")
-	netNameAtom := atom(X, "_NET_WM_NAME")
-	nameAtom := atom(X, "WM_NAME")
-	classAtom := atom(X, "WM_CLASS")
+func (x xorg) active() xproto.Window {
+	p, err := x.property(x.root, x.activeAtom)
+	if err != nil {
+		log.Fatal("active: ", err)
+	}
+	return xproto.Window(xgb.Get32(p.Value))
+}
 
-	active := prop(X, root, activeAtom)
-	windowId := xproto.Window(xgb.Get32(active.Value))
+func (x xorg) name(w xproto.Window) string {
+	name, err := x.property(w, x.netNameAtom)
+	if err != nil {
+		log.Fatal("net name: ", err)
+	}
+	if string(name.Value) != "" {
+		return string(name.Value)
+	}
+	name, err = x.property(w, x.nameAtom)
+	if err != nil {
+		log.Fatal("wm name: ", err)
+	}
+	return string(name.Value)
+}
 
-	/* skip root window */
+func (x xorg) class(w xproto.Window) string {
+	class, err := x.property(w, x.classAtom)
+	if err != nil {
+		log.Fatal("class: ", err)
+	}
+	i := bytes.IndexByte(class.Value, 0)
+	if i == -1 {
+		return ""
+	}
+	return string(class.Value[:i])
+}
+
+func (x xorg) winName() (window, bool) {
+	windowId := x.active()
+	/* skip invalid window id */
 	if windowId == 0 {
 		return window{}, false
 	}
-
-	spy(X, windowId)
-
-	name := prop(X, windowId, netNameAtom)
-	if string(name.Value) == "" {
-		name = prop(X, windowId, nameAtom)
-	}
-	class := prop(X, windowId, classAtom)
-
-	w := window{
-		Class: getClass(class.Value),
-		Name:  string(name.Value),
-	}
-
-	return w, true
+	x.spy(windowId)
+	return window{
+		Class: x.class(windowId),
+		Name:  x.name(windowId),
+	}, true
 }
 
-func rootWin(X *xgb.Conn) xproto.Window {
-	setup := xproto.Setup(X)
-	return setup.DefaultScreen(X).Root
-}
-
-func spy(X *xgb.Conn, w xproto.Window) {
-	xproto.ChangeWindowAttributes(X, w, xproto.CwEventMask,
+func (x xorg) spy(w xproto.Window) {
+	xproto.ChangeWindowAttributes(x.X, w, xproto.CwEventMask,
 		[]uint32{xproto.EventMaskPropertyChange})
 }
 
-func (t tracker) Update(X *xgb.Conn, w xproto.Window) (prev *track) {
-	if win, ok := winName(X, w); ok {
+func (x xorg) Update(t tracker) (prev *track) {
+	if win, ok := x.winName(); ok {
 		if _, ok := t[win]; !ok {
 			t[win] = new(track)
 		}
@@ -115,28 +117,44 @@ func (t tracker) Update(X *xgb.Conn, w xproto.Window) (prev *track) {
 	return
 }
 
-func collect(tracks tracker) {
-	X, err := xgb.NewConn()
+func connect() xorg {
+	var x xorg
+	var err error
+
+	x.X, err = xgb.NewConn()
 	if err != nil {
 		log.Fatal("xgb: ", err)
 	}
-	defer X.Close()
 
-	err = screensaver.Init(X)
+	err = screensaver.Init(x.X)
 	if err != nil {
 		log.Fatal("screensaver: ", err)
 	}
 
-	root := rootWin(X)
+	setup := xproto.Setup(x.X)
+	x.root = setup.DefaultScreen(x.X).Root
 
-	drw := xproto.Drawable(root)
-	screensaver.SelectInput(X, drw, screensaver.EventNotifyMask)
+	drw := xproto.Drawable(x.root)
+	screensaver.SelectInput(x.X, drw, screensaver.EventNotifyMask)
 
-	spy(X, root)
-	prev := tracks.Update(X, root)
+	x.activeAtom = x.atom("_NET_ACTIVE_WINDOW")
+	x.netNameAtom = x.atom("_NET_WM_NAME")
+	x.nameAtom = x.atom("WM_NAME")
+	x.classAtom = x.atom("WM_CLASS")
+
+	x.spy(x.root)
+
+	return x
+}
+
+func (t tracker) collect() {
+	x := connect()
+	defer x.X.Close()
+
+	prev := x.Update(t)
 
 	for {
-		ev, everr := X.WaitForEvent()
+		ev, everr := x.X.WaitForEvent()
 		if everr != nil {
 			log.Fatal("wait for event: ", everr)
 		}
@@ -145,7 +163,7 @@ func collect(tracks tracker) {
 			if prev != nil {
 				prev.Spent += time.Since(prev.Start)
 			}
-			prev = tracks.Update(X, root)
+			prev = x.Update(t)
 		case screensaver.NotifyEvent:
 			switch event.State {
 			case screensaver.StateOn:
@@ -156,40 +174,44 @@ func collect(tracks tracker) {
 	}
 }
 
-func display(tracks tracker) {
-	for {
-		var total time.Duration
-		classtotal := make(map[string]time.Duration)
-		for n, t := range tracks {
-			fmt.Println(n, t)
-			total += t.Spent
-			classtotal[n.Class] += t.Spent
-		}
-		fmt.Println("")
-		for k, v := range classtotal {
-			fmt.Println(k, v)
-		}
-		fmt.Println("Total:", total)
-		fmt.Println("")
-		time.Sleep(3 * time.Second)
+func (t tracker) String() string {
+	var ret []string
+	var total time.Duration
+	classtotal := make(map[string]time.Duration)
+	for k, v := range t {
+		ret = append(ret, fmt.Sprintf("%s %s", k, v))
+		total += v.Spent
+		classtotal[k.Class] += v.Spent
 	}
+	ret = append(ret, "")
+	for k, v := range classtotal {
+		ret = append(ret, fmt.Sprintf("%s %s", k, v))
+	}
+	ret = append(ret, fmt.Sprintf("Total %s", total))
+	ret = append(ret, "")
+	return strings.Join(ret, "\n")
 }
 
-func cleanup(tracks tracker) {
-	for {
-		for k, v := range tracks {
-			if time.Since(v.Start).Hours() > 12.0 {
-				log.Println("removing", k)
-				delete(tracks, k)
-			}
+func (t tracker) cleanup(d time.Duration) {
+	for k, v := range t {
+		if time.Since(v.Start) > d {
+			log.Println("removing", k)
+			delete(t, k)
 		}
-		time.Sleep(time.Minute)
 	}
 }
 
 func main() {
 	tracks := make(tracker)
-	go collect(tracks)
-	go cleanup(tracks)
-	display(tracks)
+	go tracks.collect()
+	go func() {
+		for {
+			tracks.cleanup(12 * time.Hour)
+			time.Sleep(5 * time.Minute)
+		}
+	}()
+	for {
+		fmt.Println(tracks)
+		time.Sleep(3 * time.Second)
+	}
 }
