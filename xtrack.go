@@ -238,6 +238,7 @@ func (t Tracker) store(fname string) {
 type Index struct {
 	Title  string
 	Tracks Tracks
+	Total  time.Duration
 }
 
 type Tracks []track
@@ -261,6 +262,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 			Class: k.Class,
 			Name:  k.Name,
 			Time:  v.Spent})
+		i.Total += v.Spent
 	}
 	sort.Sort(sort.Reverse(i.Tracks))
 	err := tmpl.Execute(w, i)
