@@ -101,9 +101,7 @@ func rootWin(X *xgb.Conn) xproto.Window {
 
 func spy(X *xgb.Conn, w xproto.Window) {
 	xproto.ChangeWindowAttributes(X, w, xproto.CwEventMask,
-		[]uint32{
-			xproto.EventMaskStructureNotify |
-				xproto.EventMaskPropertyChange})
+		[]uint32{xproto.EventMaskPropertyChange})
 }
 
 func collect(tracks tracker) {
@@ -131,19 +129,22 @@ func collect(tracks tracker) {
 	*/
 
 	for {
-		_, everr := X.WaitForEvent()
+		ev, everr := X.WaitForEvent()
 		if everr != nil {
 			log.Fatal("wait for event", everr)
 		}
-		if prev != nil {
-			prev.Spent += time.Since(prev.Start)
-		}
-		if win, ok := winName(X, root); ok {
-			if _, ok := tracks[win]; !ok {
-				tracks[win] = new(track)
+		switch ev.(type) {
+		case xproto.PropertyNotifyEvent:
+			if prev != nil {
+				prev.Spent += time.Since(prev.Start)
 			}
-			tracks[win].Start = time.Now()
-			prev = tracks[win]
+			if win, ok := winName(X, root); ok {
+				if _, ok := tracks[win]; !ok {
+					tracks[win] = new(track)
+				}
+				tracks[win].Start = time.Now()
+				prev = tracks[win]
+			}
 		}
 	}
 }
