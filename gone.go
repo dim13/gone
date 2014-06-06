@@ -86,8 +86,8 @@ func (x Xorg) class(w xproto.Window) string {
 		log.Fatal("class: ", err)
 	}
 	i := bytes.IndexByte(class.Value, 0)
-	if i == -1 {
-		return ""
+	if i == -1 || string(class.Value[:i]) == "" {
+		return "unknown"
 	}
 	return string(class.Value[:i])
 }
@@ -245,9 +245,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	classtotal := make(map[string]time.Duration)
 
 	for k, v := range tracks {
-		if k.Class != "" {
-			classtotal[k.Class] += v.Spent
-		}
+		classtotal[k.Class] += v.Spent
 		i.Total += v.Spent
 		if class != "" && class != k.Class {
 			continue
