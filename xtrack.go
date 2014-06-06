@@ -172,7 +172,8 @@ func display(tracks tracker) {
 func cleanup(tracks tracker) {
 	for {
 		for k, v := range tracks {
-			if time.Since(v.Start).Hours() > 24.0 {
+			if time.Since(v.Start).Hours() > 12.0 {
+				log.Println("removing", k)
 				delete(tracks, k)
 			}
 		}
