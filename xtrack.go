@@ -128,7 +128,7 @@ func collect(tracks tracker) {
 		if everr != nil {
 			log.Fatal("wait for event", everr)
 		}
-		switch ev.(type) {
+		switch event := ev.(type) {
 		case xproto.PropertyNotifyEvent:
 			if prev != nil {
 				prev.Spent += time.Since(prev.Start)
@@ -139,6 +139,12 @@ func collect(tracks tracker) {
 				}
 				tracks[win].Start = time.Now()
 				prev = tracks[win]
+			}
+		case screensaver.NotifyEvent:
+			switch event.State {
+			case screensaver.StateOn:
+				fmt.Println("screensaver on")
+				prev = nil
 			}
 		}
 	}
