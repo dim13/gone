@@ -6,8 +6,8 @@ Work ativity tracker
 Synopsis
 --------
 
-Gone performes automatic time accounting on EWMH capable window managers by
-looking at _NET_ACTVE_WINDOW and storing a time spent on a particular window.
+Gone performes automatic time accounting on EWMH capable Window Managers by
+looking at _NET_ACTVE_WINDOW and storing time spent on a particular window.
 
 Gone is aware of ScreenSaver and suspends accounting if ScreenSaver triggers.
 
