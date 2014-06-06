@@ -238,7 +238,7 @@ func (t Tracks) Less(i, j int) bool { return t[i].Time < t[j].Time }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	var i Index
-	i.Title = "Time Tracker"
+	i.Title = "Gone Time Tracker"
 	i.Zzz = zzz
 	class := r.URL.Path[1:]
 
