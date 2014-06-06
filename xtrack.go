@@ -169,11 +169,13 @@ func (t Tracker) collect() {
 				prev.Spent += time.Since(prev.Start)
 			}
 			prev = x.Update(t)
+			zzz = false
 		case screensaver.NotifyEvent:
 			switch event.State {
 			case screensaver.StateOn:
 				fmt.Println("away from keyboard")
 				prev = nil
+				zzz = true
 			}
 		}
 	}
@@ -239,6 +241,7 @@ type Index struct {
 	Title  string
 	Tracks Tracks
 	Total  time.Duration
+	Zzz    bool
 }
 
 type Tracks []track
@@ -256,6 +259,7 @@ func (t Tracks) Less(i, j int) bool { return t[i].Time < t[j].Time }
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	var i Index
 	i.Title = "Time Tracker"
+	i.Zzz = zzz
 
 	for k, v := range tracks {
 		i.Tracks = append(i.Tracks, track{
@@ -279,6 +283,7 @@ const (
 var (
 	tracks = make(Tracker)
 	tmpl   = template.Must(template.ParseFiles("index.html"))
+	zzz    bool
 )
 
 func main() {
