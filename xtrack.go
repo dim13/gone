@@ -120,13 +120,8 @@ func collect(tracks tracker) {
 
 	root := rootWin(X)
 	spy(X, root)
-	/*
-		drw, err := xproto.NewDrawableId(X)
-		if err != nil {
-			log.Fatal("drawable", err)
-		}
-		screensaver.SelectInput(X, drw, screensaver.EventNotifyMask)
-	*/
+	drw := xproto.Drawable(root)
+	screensaver.SelectInput(X, drw, screensaver.EventNotifyMask)
 
 	for {
 		ev, everr := X.WaitForEvent()
