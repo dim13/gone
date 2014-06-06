@@ -173,7 +173,7 @@ func cleanup(tracks tracker) {
 	for {
 		for k, v := range tracks {
 			if time.Since(v.Start).Hours() > 24.0 {
-				tracks[k] = nil
+				delete(tracks, k)
 			}
 		}
 		time.Sleep(time.Minute)
