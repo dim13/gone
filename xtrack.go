@@ -204,9 +204,10 @@ func (t Tracker) cleanup(d time.Duration) {
 }
 
 func (t Tracker) load(fname string) {
-	dump, err := os.OpenFile("dump.gob", os.O_RDONLY|os.O_CREATE, 0644)
+	dump, err := os.Open("dump.gob")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	defer dump.Close()
 	dec := gob.NewDecoder(dump)
@@ -217,9 +218,10 @@ func (t Tracker) load(fname string) {
 }
 
 func (t Tracker) store(fname string) {
-	dump, err := os.OpenFile("dump.gob", os.O_WRONLY|os.O_CREATE, 0644)
+	dump, err := os.Create("dump.gob")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 	defer dump.Close()
 	enc := gob.NewEncoder(dump)
