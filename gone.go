@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"os"
 	"sort"
-	"strings"
 	"time"
 )
 
@@ -157,7 +156,6 @@ func (t Tracker) collect() {
 	defer x.X.Close()
 
 	prev := x.Update(t)
-
 	for {
 		ev, everr := x.X.WaitForEvent()
 		if everr != nil {
@@ -179,25 +177,6 @@ func (t Tracker) collect() {
 			}
 		}
 	}
-}
-
-func (t Tracker) String() string {
-	var ret []string
-	var total time.Duration
-	classtotal := make(map[string]time.Duration)
-	for k, v := range t {
-		ret = append(ret, fmt.Sprintf("%s %s", k, v))
-		total += v.Spent
-		classtotal[k.Class] += v.Spent
-	}
-	ret = append(ret, "")
-	for k, v := range classtotal {
-		ret = append(ret, fmt.Sprintf("%s %s", k, v))
-	}
-	ret = append(ret, "")
-	ret = append(ret, fmt.Sprintf("Total %s", total))
-	ret = append(ret, "")
-	return strings.Join(ret, "\n")
 }
 
 func (t Tracker) cleanup(d time.Duration) {
