@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/xproto"
+	"github.com/BurntSushi/xgb/screensaver"
 	"log"
 	"time"
 )
@@ -100,7 +101,9 @@ func rootWin(X *xgb.Conn) xproto.Window {
 
 func spy(X *xgb.Conn, w xproto.Window) {
 	xproto.ChangeWindowAttributes(X, w, xproto.CwEventMask,
-		[]uint32{xproto.EventMaskPropertyChange})
+		[]uint32{
+			xproto.EventMaskStructureNotify|
+			xproto.EventMaskPropertyChange})
 }
 
 func collect(tracks tracker) {
@@ -112,13 +115,24 @@ func collect(tracks tracker) {
 	}
 	defer X.Close()
 
+	err = screensaver.Init(X)
+	if err != nil {
+		log.Fatal("screensaver", err)
+	}
+
 	root := rootWin(X)
 	spy(X, root)
+	/*
+	drw, _ := xproto.NewDrawableId(X)
+	screensaver.SelectInput(X, drw, screensaver.EventNotifyMask)
+	 */
 
 	for {
-		if _, everr := X.WaitForEvent(); everr != nil {
+		ev, everr := X.WaitForEvent()
+		if everr != nil {
 			log.Fatal("wait for event", err)
 		}
+		log.Println("Event:", ev)
 		if prev != nil {
 			prev.Spent += time.Since(prev.Start)
 		}
@@ -137,7 +151,7 @@ func display(tracks tracker) {
 		var total time.Duration
 		classtotal := make(map[string]time.Duration)
 		for n, t := range tracks {
-			log.Println(n, t)
+			fmt.Println(n, t)
 			total += t.Spent
 			classtotal[n.Class] += t.Spent
 		}
