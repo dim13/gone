@@ -104,9 +104,18 @@ func spy(X *xgb.Conn, w xproto.Window) {
 		[]uint32{xproto.EventMaskPropertyChange})
 }
 
-func collect(tracks tracker) {
-	var prev *track
+func (t tracker) Update(X *xgb.Conn, w xproto.Window) (prev *track) {
+	if win, ok := winName(X, w); ok {
+		if _, ok := t[win]; !ok {
+			t[win] = new(track)
+		}
+		t[win].Start = time.Now()
+		prev = t[win]
+	}
+	return
+}
 
+func collect(tracks tracker) {
 	X, err := xgb.NewConn()
 	if err != nil {
 		log.Fatal("xgb", err)
@@ -119,9 +128,12 @@ func collect(tracks tracker) {
 	}
 
 	root := rootWin(X)
-	spy(X, root)
+
 	drw := xproto.Drawable(root)
 	screensaver.SelectInput(X, drw, screensaver.EventNotifyMask)
+
+	spy(X, root)
+	prev := tracks.Update(X, root)
 
 	for {
 		ev, everr := X.WaitForEvent()
@@ -133,17 +145,11 @@ func collect(tracks tracker) {
 			if prev != nil {
 				prev.Spent += time.Since(prev.Start)
 			}
-			if win, ok := winName(X, root); ok {
-				if _, ok := tracks[win]; !ok {
-					tracks[win] = new(track)
-				}
-				tracks[win].Start = time.Now()
-				prev = tracks[win]
-			}
+			prev = tracks.Update(X, root)
 		case screensaver.NotifyEvent:
 			switch event.State {
 			case screensaver.StateOn:
-				fmt.Println("screensaver on")
+				fmt.Println("away from keyboard")
 				prev = nil
 			}
 		}
