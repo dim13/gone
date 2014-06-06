@@ -8,6 +8,7 @@ import (
 	"github.com/BurntSushi/xgb/screensaver"
 	"github.com/BurntSushi/xgb/xproto"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -204,7 +205,7 @@ func (t Tracker) cleanup(d time.Duration) {
 }
 
 func (t Tracker) load(fname string) {
-	dump, err := os.Open("dump.gob")
+	dump, err := os.Open(fname)
 	if err != nil {
 		log.Println(err)
 		return
@@ -218,7 +219,7 @@ func (t Tracker) load(fname string) {
 }
 
 func (t Tracker) store(fname string) {
-	dump, err := os.Create("dump.gob")
+	dump, err := os.Create(fname)
 	if err != nil {
 		log.Println(err)
 		return
@@ -231,9 +232,19 @@ func (t Tracker) store(fname string) {
 	}
 }
 
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, tracks)
+}
+
+const (
+	port = ":8001"
+	file = "dump.gob"
+)
+
+var tracks = make(Tracker)
+
 func main() {
-	const file = "dump.gob"
-	tracks := make(Tracker)
+	//tracks := make(Tracker)
 
 	tracks.load(file)
 	go tracks.collect()
@@ -244,8 +255,7 @@ func main() {
 			time.Sleep(time.Minute)
 		}
 	}()
-	for {
-		fmt.Println(tracks)
-		time.Sleep(3 * time.Second)
-	}
+	log.Println("listen on", port)
+	http.HandleFunc("/", indexHandler)
+	http.ListenAndServe(port, nil)
 }
