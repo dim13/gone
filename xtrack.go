@@ -190,6 +190,7 @@ func (t Tracker) String() string {
 	for k, v := range classtotal {
 		ret = append(ret, fmt.Sprintf("%s %s", k, v))
 	}
+	ret = append(ret, "")
 	ret = append(ret, fmt.Sprintf("Total %s", total))
 	ret = append(ret, "")
 	return strings.Join(ret, "\n")
