@@ -1,0 +1,20 @@
+<!DOCTYPE html5>
+<html>
+	<head>
+		<title>{{.Title}}</title>
+		<meta http-equiv="refresh" content="5">
+	</head>
+	<body>
+		<h1>{{.Title}}</h1>
+		<table>
+		{{range .Tracker}}
+		<tr>
+			<td>{{.Class}}</td>
+			<td>{{.Name}}</td>
+			<td>{{.Time}}</td>
+		</tr>
+		{{end}}
+		</table>
+	</body>
+</html>
+
