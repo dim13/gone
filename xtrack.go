@@ -2,28 +2,30 @@ package main
 
 import (
 	"bytes"
+	"encoding/gob"
 	"fmt"
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/screensaver"
 	"github.com/BurntSushi/xgb/xproto"
 	"log"
+	"os"
 	"strings"
 	"time"
 )
 
-type tracker map[window]*track
+type Tracker map[Window]*Track
 
-type track struct {
+type Track struct {
 	Start time.Time
 	Spent time.Duration
 }
 
-type window struct {
+type Window struct {
 	Class string
 	Name  string
 }
 
-type xorg struct {
+type Xorg struct {
 	X           *xgb.Conn
 	root        xproto.Window
 	activeAtom  *xproto.InternAtomReply
@@ -32,15 +34,15 @@ type xorg struct {
 	classAtom   *xproto.InternAtomReply
 }
 
-func (t track) String() string {
+func (t Track) String() string {
 	return fmt.Sprint(t.Spent)
 }
 
-func (w window) String() string {
+func (w Window) String() string {
 	return fmt.Sprintf("%s %s", w.Class, w.Name)
 }
 
-func (x xorg) atom(aname string) *xproto.InternAtomReply {
+func (x Xorg) atom(aname string) *xproto.InternAtomReply {
 	a, err := xproto.InternAtom(x.X, true, uint16(len(aname)), aname).Reply()
 	if err != nil {
 		log.Fatal("atom: ", err)
@@ -48,12 +50,12 @@ func (x xorg) atom(aname string) *xproto.InternAtomReply {
 	return a
 }
 
-func (x xorg) property(w xproto.Window, a *xproto.InternAtomReply) (*xproto.GetPropertyReply, error) {
+func (x Xorg) property(w xproto.Window, a *xproto.InternAtomReply) (*xproto.GetPropertyReply, error) {
 	return xproto.GetProperty(x.X, false, w, a.Atom,
 		xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
 }
 
-func (x xorg) active() xproto.Window {
+func (x Xorg) active() xproto.Window {
 	p, err := x.property(x.root, x.activeAtom)
 	if err != nil {
 		log.Fatal("active: ", err)
@@ -61,7 +63,7 @@ func (x xorg) active() xproto.Window {
 	return xproto.Window(xgb.Get32(p.Value))
 }
 
-func (x xorg) name(w xproto.Window) string {
+func (x Xorg) name(w xproto.Window) string {
 	name, err := x.property(w, x.netNameAtom)
 	if err != nil {
 		log.Fatal("net name: ", err)
@@ -76,7 +78,7 @@ func (x xorg) name(w xproto.Window) string {
 	return string(name.Value)
 }
 
-func (x xorg) class(w xproto.Window) string {
+func (x Xorg) class(w xproto.Window) string {
 	class, err := x.property(w, x.classAtom)
 	if err != nil {
 		log.Fatal("class: ", err)
@@ -88,28 +90,28 @@ func (x xorg) class(w xproto.Window) string {
 	return string(class.Value[:i])
 }
 
-func (x xorg) winName() (window, bool) {
+func (x Xorg) winName() (Window, bool) {
 	windowId := x.active()
 	/* skip invalid window id */
 	if windowId == 0 {
-		return window{}, false
+		return Window{}, false
 	}
 	x.spy(windowId)
-	return window{
+	return Window{
 		Class: x.class(windowId),
 		Name:  x.name(windowId),
 	}, true
 }
 
-func (x xorg) spy(w xproto.Window) {
+func (x Xorg) spy(w xproto.Window) {
 	xproto.ChangeWindowAttributes(x.X, w, xproto.CwEventMask,
 		[]uint32{xproto.EventMaskPropertyChange})
 }
 
-func (x xorg) Update(t tracker) (prev *track) {
+func (x Xorg) Update(t Tracker) (prev *Track) {
 	if win, ok := x.winName(); ok {
 		if _, ok := t[win]; !ok {
-			t[win] = new(track)
+			t[win] = new(Track)
 		}
 		t[win].Start = time.Now()
 		prev = t[win]
@@ -117,8 +119,8 @@ func (x xorg) Update(t tracker) (prev *track) {
 	return
 }
 
-func connect() xorg {
-	var x xorg
+func connect() Xorg {
+	var x Xorg
 	var err error
 
 	x.X, err = xgb.NewConn()
@@ -147,7 +149,7 @@ func connect() xorg {
 	return x
 }
 
-func (t tracker) collect() {
+func (t Tracker) collect() {
 	x := connect()
 	defer x.X.Close()
 
@@ -174,7 +176,7 @@ func (t tracker) collect() {
 	}
 }
 
-func (t tracker) String() string {
+func (t Tracker) String() string {
 	var ret []string
 	var total time.Duration
 	classtotal := make(map[string]time.Duration)
@@ -192,7 +194,7 @@ func (t tracker) String() string {
 	return strings.Join(ret, "\n")
 }
 
-func (t tracker) cleanup(d time.Duration) {
+func (t Tracker) cleanup(d time.Duration) {
 	for k, v := range t {
 		if time.Since(v.Start) > d {
 			log.Println("removing", k)
@@ -201,13 +203,43 @@ func (t tracker) cleanup(d time.Duration) {
 	}
 }
 
+func (t Tracker) load(fname string) {
+	dump, err := os.OpenFile("dump.gob", os.O_RDONLY|os.O_CREATE, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer dump.Close()
+	dec := gob.NewDecoder(dump)
+	err = dec.Decode(&t)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func (t Tracker) store(fname string) {
+	dump, err := os.OpenFile("dump.gob", os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer dump.Close()
+	enc := gob.NewEncoder(dump)
+	err = enc.Encode(t)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 func main() {
-	tracks := make(tracker)
+	const file = "dump.gob"
+	tracks := make(Tracker)
+
+	tracks.load(file)
 	go tracks.collect()
 	go func() {
 		for {
 			tracks.cleanup(12 * time.Hour)
-			time.Sleep(5 * time.Minute)
+			tracks.store(file)
+			time.Sleep(time.Minute)
 		}
 	}()
 	for {
