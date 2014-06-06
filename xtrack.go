@@ -165,12 +165,24 @@ func display(tracks tracker) {
 		}
 		fmt.Println("Total:", total)
 		fmt.Println("")
-		time.Sleep(5 * time.Second)
+		time.Sleep(3 * time.Second)
+	}
+}
+
+func cleanup(tracks tracker) {
+	for {
+		for k, v := range tracks {
+			if time.Since(v.Start).Hours() > 24.0 {
+				tracks[k] = nil
+			}
+		}
+		time.Sleep(time.Minute)
 	}
 }
 
 func main() {
 	tracks := make(tracker)
 	go collect(tracks)
+	go cleanup(tracks)
 	display(tracks)
 }
