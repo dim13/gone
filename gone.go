@@ -245,7 +245,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	classtotal := make(map[string]time.Duration)
 
 	for k, v := range tracks {
-		classtotal[k.Class] += v.Spent
+		if k.Class != "" {
+			classtotal[k.Class] += v.Spent
+		}
 		i.Total += v.Spent
 		if class != "" && class != k.Class {
 			continue
