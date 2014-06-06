@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/BurntSushi/xgb"
-	"github.com/BurntSushi/xgb/xproto"
 	"github.com/BurntSushi/xgb/screensaver"
+	"github.com/BurntSushi/xgb/xproto"
 	"log"
 	"time"
 )
@@ -102,8 +102,8 @@ func rootWin(X *xgb.Conn) xproto.Window {
 func spy(X *xgb.Conn, w xproto.Window) {
 	xproto.ChangeWindowAttributes(X, w, xproto.CwEventMask,
 		[]uint32{
-			xproto.EventMaskStructureNotify|
-			xproto.EventMaskPropertyChange})
+			xproto.EventMaskStructureNotify |
+				xproto.EventMaskPropertyChange})
 }
 
 func collect(tracks tracker) {
@@ -123,16 +123,18 @@ func collect(tracks tracker) {
 	root := rootWin(X)
 	spy(X, root)
 	/*
-	drw, _ := xproto.NewDrawableId(X)
-	screensaver.SelectInput(X, drw, screensaver.EventNotifyMask)
-	 */
+		drw, err := xproto.NewDrawableId(X)
+		if err != nil {
+			log.Fatal("drawable", err)
+		}
+		screensaver.SelectInput(X, drw, screensaver.EventNotifyMask)
+	*/
 
 	for {
-		ev, everr := X.WaitForEvent()
+		_, everr := X.WaitForEvent()
 		if everr != nil {
-			log.Fatal("wait for event", err)
+			log.Fatal("wait for event", everr)
 		}
-		log.Println("Event:", ev)
 		if prev != nil {
 			prev.Spent += time.Since(prev.Start)
 		}
