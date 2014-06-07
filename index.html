@@ -4,11 +4,30 @@
 		<title>{{.Title}}</title>
 		<meta http-equiv="refresh" content="10">
 		<link href='http://fonts.googleapis.com/css?family=Play' rel='stylesheet' type='text/css'>
-		<style>body { font-family: 'Play', sans-serif; }</style>
+		<style>
+			body {
+				font-family: 'Play', sans-serif;
+				margin: 2% 6%;
+			}
+			aside {
+				float: right;
+				border: thin solid #428a42;
+				background: #efffef;
+				padding: 1em;
+				margin-left: 1em;
+			}
+			h2, h3 {
+				margin-top: 0;
+			}
+			.odd {
+				background: #efefef;
+			}
+		</style>
 	</head>
 	<body>
 		<h1>{{.Title}}{{if .Zzz}} Zzz&hellip;{{end}}</h1>
-		<h2>Classes</h2>
+		<aside>
+		<h3>Classes</h3>
 		<table>
 		<tr>
 			<td><a href="/">All</a></td>
@@ -20,11 +39,11 @@
 			<td>{{.Time}}</td>
 		</tr>
 		{{end}}
-		</table>`
-		<h2>Individually</h2>
+		</table>
+		</aside>
 		<table>
 		{{range .Tracks}}
-		<tr>
+		<tr {{if .Odd}}class="odd"{{end}}>
 			<td><a href="/{{.Class}}">{{.Class}}</a></td>
 			<td>{{.Name}}</td>
 			<td>{{.Time}}</td>

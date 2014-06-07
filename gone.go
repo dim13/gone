@@ -232,6 +232,7 @@ type track struct {
 	Class string
 	Name  string
 	Time  time.Duration
+	Odd   bool
 }
 
 func (t Tracks) Len() int           { return len(t) }
@@ -262,6 +263,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Sort(sort.Reverse(i.Class))
 	sort.Sort(sort.Reverse(i.Tracks))
+	for j, _ := range i.Tracks {
+		i.Tracks[j].Odd = j%2 == 0
+	}
 	err := tmpl.Execute(w, i)
 	if err != nil {
 		log.Println(err)
