@@ -61,36 +61,32 @@ func (x Xorg) property(w xproto.Window, a *xproto.InternAtomReply) (*xproto.GetP
 func (x Xorg) active() xproto.Window {
 	p, err := x.property(x.root, x.activeAtom)
 	if err != nil {
-		log.Fatal("active: ", err)
+		return x.root
 	}
 	return xproto.Window(xgb.Get32(p.Value))
 }
 
 func (x Xorg) name(w xproto.Window) string {
 	name, err := x.property(w, x.netNameAtom)
-	if err != nil {
-		log.Fatal("net name: ", err)
-	}
-	if string(name.Value) != "" {
+	if err == nil && string(name.Value) != "" {
 		return string(name.Value)
 	}
 	name, err = x.property(w, x.nameAtom)
-	if err != nil {
-		log.Fatal("wm name: ", err)
+	if err == nil {
+		return string(name.Value)
 	}
-	return string(name.Value)
+	return "unknown"
 }
 
 func (x Xorg) class(w xproto.Window) string {
 	class, err := x.property(w, x.classAtom)
-	if err != nil {
-		log.Fatal("class: ", err)
+	if err == nil {
+		i := bytes.IndexByte(class.Value, 0)
+		if i != -1 && string(class.Value[:i]) != "" {
+			return string(class.Value[:i])
+		}
 	}
-	i := bytes.IndexByte(class.Value, 0)
-	if i == -1 || string(class.Value[:i]) == "" {
-		return "unknown"
-	}
-	return string(class.Value[:i])
+	return "unknown"
 }
 
 func (x Xorg) winName() (Window, bool) {
