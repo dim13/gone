@@ -19,22 +19,25 @@
 			.odd {
 				background: #efefef;
 			}
+			#total {
+				border-top: thin solid black;
+			}
 		</style>
 	</head>
 	<body>
 		<h1>{{.Title}}{{if .Zzz}} Zzz&hellip;{{end}}</h1>
 		<aside>
 		<table>
-		<tr>
-			<td><a href="/">All</a></td>
-			<td>{{.Total}}</td>
-		</tr>
 		{{range .Classes}}
 		<tr>
 			<td><a href="/{{.Class}}">{{.Class}}</a></td>
 			<td>{{.Spent}}</td>
 		</tr>
 		{{end}}
+		<tr>
+			<td><a href="/">&Sigma;</a></td>
+			<td id="total">{{.Total}}</td>
+		</tr>
 		</table>
 		</aside>
 		<table>
