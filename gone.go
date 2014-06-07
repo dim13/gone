@@ -37,6 +37,10 @@ type Xorg struct {
 	classAtom   *xproto.InternAtomReply
 }
 
+const (
+	unknown = "unknown"
+)
+
 func (t Track) String() string {
 	return fmt.Sprint(t.Spent)
 }
@@ -68,25 +72,31 @@ func (x Xorg) active() xproto.Window {
 
 func (x Xorg) name(w xproto.Window) string {
 	name, err := x.property(w, x.netNameAtom)
-	if err == nil && string(name.Value) != "" {
-		return string(name.Value)
+	if err != nil {
+		return unknown
 	}
-	name, err = x.property(w, x.nameAtom)
-	if err == nil && string(name.Value) != "" {
-		return string(name.Value)
+
+	if string(name.Value) == "" {
+		name, err = x.property(w, x.nameAtom)
+		if err != nil || string(name.Value) == "" {
+			return unknown
+		}
 	}
-	return "unknown"
+	return string(name.Value)
 }
 
 func (x Xorg) class(w xproto.Window) string {
 	class, err := x.property(w, x.classAtom)
-	if err == nil {
-		i := bytes.IndexByte(class.Value, 0)
-		if i != -1 && string(class.Value[:i]) != "" {
-			return string(class.Value[:i])
-		}
+	if err != nil {
+		return unknown
 	}
-	return "unknown"
+
+	i := bytes.IndexByte(class.Value, 0)
+	if i == -1 || string(class.Value[:i]) == "" {
+		return unknown
+	}
+
+	return string(class.Value[:i])
 }
 
 func (x Xorg) winName() (Window, bool) {
