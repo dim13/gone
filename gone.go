@@ -4,15 +4,17 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"github.com/BurntSushi/xgb"
-	"github.com/BurntSushi/xgb/screensaver"
-	"github.com/BurntSushi/xgb/xproto"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"sort"
+	"sync"
 	"time"
+
+	"github.com/BurntSushi/xgb"
+	"github.com/BurntSushi/xgb/screensaver"
+	"github.com/BurntSushi/xgb/xproto"
 )
 
 type Tracker map[Window]*Track
@@ -284,12 +286,19 @@ var (
 )
 
 func main() {
+	mutex := &sync.Mutex{}
+
+	mutex.Lock()
 	tracks.load(file)
+	mutex.Unlock()
+
 	go tracks.collect()
 	go func() {
 		for {
 			tracks.cleanup(8 * time.Hour)
+			mutex.Lock()
 			tracks.store(file)
+			mutex.Unlock()
 			time.Sleep(time.Minute)
 		}
 	}()
