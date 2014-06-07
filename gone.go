@@ -167,13 +167,14 @@ func (t Tracker) collect() {
 				prev.Spent += time.Since(prev.Start)
 			}
 			prev = x.Update(t)
-			zzz = false
 		case screensaver.NotifyEvent:
 			switch event.State {
 			case screensaver.StateOn:
 				fmt.Println("away from keyboard")
 				prev = nil
 				zzz = true
+			default:
+				zzz = false
 			}
 		}
 	}
