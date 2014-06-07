@@ -174,6 +174,7 @@ func (t Tracker) collect() {
 				prev = nil
 				zzz = true
 			default:
+				fmt.Println("back to keyboard")
 				zzz = false
 			}
 		}
