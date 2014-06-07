@@ -243,11 +243,11 @@ type Index struct {
 type Records []Record
 
 type Record struct {
-	Class string
-	Name  string
-	Spent time.Duration
-	Seen  time.Time
-	Odd   bool `json:"-"`
+	Class    string
+	Name     string
+	Spent    time.Duration
+	LastSeen time.Time
+	Odd      bool `json:"-"`
 }
 
 func (r Records) Len() int           { return len(r) }
@@ -292,10 +292,10 @@ func dumpHandler(w http.ResponseWriter, r *http.Request) {
 
 	for k, v := range tracks {
 		rec = append(rec, Record{
-			Class: k.Class,
-			Name:  k.Name,
-			Spent: v.Spent,
-			Seen:  v.Start})
+			Class:    k.Class,
+			Name:     k.Name,
+			Spent:    v.Spent,
+			LastSeen: v.Start})
 	}
 
 	data, err := json.MarshalIndent(rec, "", "\t")

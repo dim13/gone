@@ -30,6 +30,7 @@
 	<body>
 		<h1>{{.Title}}{{if .Zzz}} Zzz&hellip;{{end}}</h1>
 		<aside>
+		<h3>Gross time</h3>
 		<table>
 		{{range .Classes}}
 		<tr>
@@ -42,6 +43,11 @@
 			<td id="total">{{.Total}}</td>
 		</tr>
 		</table>
+		<h3>Functions</h3>
+		<ul>
+		<li><a href="/dump.json">Dump</a></li>
+		<!--li><a href="/reset">Reset</a></li-->
+		</ul>
 		</aside>
 		<table>
 		<tr>
