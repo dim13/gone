@@ -32,7 +32,7 @@ var (
 type Tracker map[Window]*Track
 
 type Track struct {
-	Start time.Time
+	Seen  time.Time
 	Spent time.Duration
 }
 
@@ -128,7 +128,7 @@ func (x Xorg) update(t Tracker) (prev *Track) {
 		if _, ok := t[win]; !ok {
 			t[win] = new(Track)
 		}
-		t[win].Start = time.Now()
+		t[win].Seen = time.Now()
 		prev = t[win]
 	}
 	return
@@ -178,7 +178,7 @@ func (t Tracker) collect() {
 		switch event := ev.(type) {
 		case xproto.PropertyNotifyEvent:
 			if prev != nil {
-				prev.Spent += time.Since(prev.Start)
+				prev.Spent += time.Since(prev.Seen)
 			}
 			prev = x.update(t)
 		case screensaver.NotifyEvent:
@@ -197,7 +197,7 @@ func (t Tracker) collect() {
 
 func (t Tracker) cleanup(d time.Duration) {
 	for k, v := range t {
-		if time.Since(v.Start) > d {
+		if time.Since(v.Seen) > d {
 			log.Println("removing", k)
 			delete(t, k)
 		}
@@ -292,10 +292,10 @@ func dumpHandler(w http.ResponseWriter, r *http.Request) {
 
 	for k, v := range tracks {
 		rec = append(rec, Record{
-			Class:    k.Class,
-			Name:     k.Name,
-			Spent:    v.Spent,
-			LastSeen: v.Start})
+			Class: k.Class,
+			Name:  k.Name,
+			Spent: v.Spent,
+			Seen:  v.Seen})
 	}
 
 	data, err := json.MarshalIndent(rec, "", "\t")
