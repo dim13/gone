@@ -1,5 +1,5 @@
-Where has my time gone?
-=======================
+Gone Time Tracker - Where has my time gone?
+===========================================
 
 Work ativity tracker
 
