@@ -72,7 +72,7 @@ func (x Xorg) name(w xproto.Window) string {
 		return string(name.Value)
 	}
 	name, err = x.property(w, x.nameAtom)
-	if err == nil {
+	if err == nil && string(name.Value) != "" {
 		return string(name.Value)
 	}
 	return "unknown"
