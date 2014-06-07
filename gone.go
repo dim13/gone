@@ -16,6 +16,18 @@ import (
 	"github.com/BurntSushi/xgb/xproto"
 )
 
+const (
+	port = ":8001"
+	file = "dump.gob"
+	unknown = "unknown"
+)
+
+var (
+	tracks = make(Tracker)
+	tmpl   = template.Must(template.ParseFiles("index.html"))
+	zzz    bool
+)
+
 type Tracker map[Window]*Track
 
 type Track struct {
@@ -37,9 +49,6 @@ type Xorg struct {
 	classAtom   *xproto.InternAtomReply
 }
 
-const (
-	unknown = "unknown"
-)
 
 func (t Track) String() string {
 	return fmt.Sprint(t.Spent)
@@ -75,7 +84,6 @@ func (x Xorg) name(w xproto.Window) string {
 	if err != nil {
 		return unknown
 	}
-
 	if string(name.Value) == "" {
 		name, err = x.property(w, x.nameAtom)
 		if err != nil || string(name.Value) == "" {
@@ -90,12 +98,10 @@ func (x Xorg) class(w xproto.Window) string {
 	if err != nil {
 		return unknown
 	}
-
 	i := bytes.IndexByte(class.Value, 0)
 	if i == -1 || string(class.Value[:i]) == "" {
 		return unknown
 	}
-
 	return string(class.Value[:i])
 }
 
@@ -278,17 +284,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 }
-
-const (
-	port = ":8001"
-	file = "dump.gob"
-)
-
-var (
-	tracks = make(Tracker)
-	tmpl   = template.Must(template.ParseFiles("index.html"))
-	zzz    bool
-)
 
 func main() {
 	tracks.load(file)
