@@ -29,10 +29,10 @@
 			<td><a href="/">All</a></td>
 			<td>{{.Total}}</td>
 		</tr>
-		{{range .Class}}
+		{{range .Classes}}
 		<tr>
 			<td><a href="/{{.Class}}">{{.Class}}</a></td>
-			<td>{{.Time}}</td>
+			<td>{{.Spent}}</td>
 		</tr>
 		{{end}}
 		</table>
@@ -43,11 +43,11 @@
 			<th>Name</th>
 			<th>Duration</th>
 		</tr>
-		{{range .Tracks}}
+		{{range .Records}}
 		<tr {{if .Odd}}class="odd"{{end}}>
 			<td><a href="/{{.Class}}">{{.Class}}</a></td>
 			<td>{{.Name}}</td>
-			<td>{{.Time}}</td>
+			<td>{{.Spent}}</td>
 		</tr>
 		{{end}}
 		</table>

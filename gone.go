@@ -221,54 +221,54 @@ func (t Tracker) store(fname string) {
 }
 
 type Index struct {
-	Title  string
-	Tracks Tracks
-	Class  Tracks
-	Total  time.Duration
-	Zzz    bool
+	Title   string
+	Records Records
+	Classes Records
+	Total   time.Duration
+	Zzz     bool
 }
 
-type Tracks []track
+type Records []Record
 
-type track struct {
+type Record struct {
 	Class string
 	Name  string
-	Time  time.Duration
+	Spent time.Duration
 	Odd   bool
 }
 
-func (t Tracks) Len() int           { return len(t) }
-func (t Tracks) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
-func (t Tracks) Less(i, j int) bool { return t[i].Time < t[j].Time }
+func (r Records) Len() int           { return len(r) }
+func (r Records) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
+func (r Records) Less(i, j int) bool { return r[i].Spent < r[j].Spent }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	var i Index
-	i.Title = "Gone Time Tracker"
-	i.Zzz = zzz
+	var idx Index
+	idx.Title = "Gone Time Tracker"
+	idx.Zzz = zzz
 	class := r.URL.Path[1:]
 
 	classtotal := make(map[string]time.Duration)
 
 	for k, v := range tracks {
 		classtotal[k.Class] += v.Spent
-		i.Total += v.Spent
+		idx.Total += v.Spent
 		if class != "" && class != k.Class {
 			continue
 		}
-		i.Tracks = append(i.Tracks, track{
+		idx.Records = append(idx.Records, Record{
 			Class: k.Class,
 			Name:  k.Name,
-			Time:  v.Spent})
+			Spent: v.Spent})
 	}
 	for k, v := range classtotal {
-		i.Class = append(i.Class, track{Class: k, Time: v})
+		idx.Classes = append(idx.Classes, Record{Class: k, Spent: v})
 	}
-	sort.Sort(sort.Reverse(i.Class))
-	sort.Sort(sort.Reverse(i.Tracks))
-	for j, _ := range i.Tracks {
-		i.Tracks[j].Odd = j%2 == 0
+	sort.Sort(sort.Reverse(idx.Classes))
+	sort.Sort(sort.Reverse(idx.Records))
+	for j, _ := range idx.Records {
+		idx.Records[j].Odd = j%2 == 0
 	}
-	err := tmpl.Execute(w, i)
+	err := tmpl.Execute(w, idx)
 	if err != nil {
 		log.Println(err)
 	}
