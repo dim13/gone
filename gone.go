@@ -243,11 +243,11 @@ type Index struct {
 type Records []Record
 
 type Record struct {
-	Class    string
-	Name     string
-	Spent    time.Duration
-	LastSeen time.Time
-	Odd      bool `json:"-"`
+	Class string
+	Name  string
+	Spent time.Duration
+	Seen  time.Time
+	Odd   bool `json:"-"`
 }
 
 func (r Records) Len() int           { return len(r) }
