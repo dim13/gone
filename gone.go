@@ -110,7 +110,7 @@ func (x Xorg) spy(w xproto.Window) {
 		[]uint32{xproto.EventMaskPropertyChange})
 }
 
-func (x Xorg) Update(t Tracker) (prev *Track) {
+func (x Xorg) update(t Tracker) (prev *Track) {
 	if win, ok := x.winName(); ok {
 		if _, ok := t[win]; !ok {
 			t[win] = new(Track)
@@ -155,7 +155,7 @@ func (t Tracker) collect() {
 	x := connect()
 	defer x.X.Close()
 
-	prev := x.Update(t)
+	prev := x.update(t)
 	for {
 		ev, everr := x.X.WaitForEvent()
 		if everr != nil {
@@ -166,7 +166,7 @@ func (t Tracker) collect() {
 			if prev != nil {
 				prev.Spent += time.Since(prev.Start)
 			}
-			prev = x.Update(t)
+			prev = x.update(t)
 		case screensaver.NotifyEvent:
 			switch event.State {
 			case screensaver.StateOn:
