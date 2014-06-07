@@ -275,7 +275,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Sort(sort.Reverse(idx.Classes))
 	sort.Sort(sort.Reverse(idx.Records))
-	for j, _ := range idx.Records {
+	for j := range idx.Records {
 		idx.Records[j].Odd = j%2 == 0
 	}
 	err := tmpl.Execute(w, idx)
