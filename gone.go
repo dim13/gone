@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -245,7 +246,8 @@ type Record struct {
 	Class string
 	Name  string
 	Spent time.Duration
-	Odd   bool
+	Seen  time.Time
+	Odd   bool `json:"-"`
 }
 
 func (r Records) Len() int           { return len(r) }
@@ -285,6 +287,24 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func dumpHandler(w http.ResponseWriter, r *http.Request) {
+	var rec Records
+
+	for k, v := range tracks {
+		rec = append(rec, Record{
+			Class: k.Class,
+			Name:  k.Name,
+			Spent: v.Spent,
+			Seen:  v.Start})
+	}
+
+	data, err := json.MarshalIndent(rec, "", "\t")
+	if err != nil {
+		log.Println("dump:", err)
+	}
+	w.Write(data)
+}
+
 func main() {
 	tracks.load(file)
 	go tracks.collect()
@@ -297,5 +317,6 @@ func main() {
 	}()
 	log.Println("listen on", port)
 	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/dump.json", dumpHandler)
 	http.ListenAndServe(port, nil)
 }
