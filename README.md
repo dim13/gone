@@ -1,7 +1,10 @@
-Gone Time Tracker - Where has my time gone?
-===========================================
+Gone Time Tracker
+=================
 
-Work ativity tracker
+Name
+----
+
+Where has my time gone? Automatic work ativity tracker in pure Go.
 
 Synopsis
 --------
