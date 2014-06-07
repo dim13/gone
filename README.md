@@ -20,8 +20,3 @@ Installation
 ------------
 
     go get github.com/dim13/gone
-
-Documentation
--------------
-
-https://godoc.org/github/dim13/gone
