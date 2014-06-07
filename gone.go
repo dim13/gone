@@ -283,7 +283,7 @@ func main() {
 	go tracks.collect()
 	go func() {
 		for {
-			tracks.cleanup(12 * time.Hour)
+			tracks.cleanup(6 * time.Hour)
 			tracks.store(file)
 			time.Sleep(time.Minute)
 		}
