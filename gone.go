@@ -171,7 +171,8 @@ func (t Tracker) collect() {
 	for {
 		ev, everr := x.X.WaitForEvent()
 		if everr != nil {
-			log.Fatal("wait for event: ", everr)
+			log.Println("wait for event:", everr)
+			continue
 		}
 		switch event := ev.(type) {
 		case xproto.PropertyNotifyEvent:
