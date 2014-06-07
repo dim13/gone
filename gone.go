@@ -219,7 +219,7 @@ func (t Tracker) load(fname string) {
 }
 
 func (t Tracker) store(fname string) {
-	dump, err := os.Create(fname)
+	dump, err := os.Create(fname + ".tmp")
 	if err != nil {
 		log.Println(err)
 		return
@@ -230,6 +230,7 @@ func (t Tracker) store(fname string) {
 	if err != nil {
 		log.Println(err)
 	}
+	os.Rename(fname+".tmp", fname)
 }
 
 type Index struct {
