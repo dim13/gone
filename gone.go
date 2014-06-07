@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"sort"
-	"sync"
 	"time"
 
 	"github.com/BurntSushi/xgb"
@@ -286,19 +285,12 @@ var (
 )
 
 func main() {
-	mutex := &sync.Mutex{}
-
-	mutex.Lock()
 	tracks.load(file)
-	mutex.Unlock()
-
 	go tracks.collect()
 	go func() {
 		for {
 			tracks.cleanup(8 * time.Hour)
-			mutex.Lock()
 			tracks.store(file)
-			mutex.Unlock()
 			time.Sleep(time.Minute)
 		}
 	}()
