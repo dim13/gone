@@ -4,7 +4,7 @@ Gone Time Tracker
 Name
 ----
 
-Where has my time gone? Automatic work ativity tracker in pure Go.
+Where has my time gone? X11 automatic work ativity tracker in pure Go.
 
 Synopsis
 --------
