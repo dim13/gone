@@ -16,8 +16,8 @@ Gone is aware of ScreenSaver and suspends accounting if ScreenSaver triggers.
 
 Results are presented at http://localhost:8001/
 
-Install
--------
+Installation
+------------
 
     go get github.com/dim13/gone
 
