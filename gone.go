@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	port = ":8001"
-	file = "dump.gob"
+	port    = ":8001"
+	file    = "dump.gob"
 	unknown = "unknown"
 )
 
@@ -48,7 +48,6 @@ type Xorg struct {
 	nameAtom    *xproto.InternAtomReply
 	classAtom   *xproto.InternAtomReply
 }
-
 
 func (t Track) String() string {
 	return fmt.Sprint(t.Spent)
