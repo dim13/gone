@@ -233,6 +233,12 @@ func (t Tracker) store(fname string) {
 	os.Rename(fname+".tmp", fname)
 }
 
+func (t Tracker) reset() {
+	for k := range t {
+		delete(t, k)
+	}
+}
+
 type Index struct {
 	Title   string
 	Records Records
@@ -306,6 +312,11 @@ func dumpHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+func resetHandler(w http.ResponseWriter, r *http.Request) {
+	tracks.reset()
+	http.Redirect(w, r, "/", http.StatusFound)
+}
+
 func main() {
 	tracks.load(file)
 	go tracks.collect()
@@ -319,5 +330,6 @@ func main() {
 	log.Println("listen on", port)
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/dump.json", dumpHandler)
+	http.HandleFunc("/reset", resetHandler)
 	http.ListenAndServe(port, nil)
 }
