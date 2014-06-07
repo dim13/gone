@@ -10,7 +10,7 @@ Synopsis
 --------
 
 _Gone_ performs automatic time accounting on EWMH capable Window Managers by
-looking at _NET_ACTVE_WINDOW and storing spent time on a particular window.
+looking at _NET_ACTIVE_WINDOW and storing spent time on a particular window.
 
 _Gone_ is aware of ScreenSaver and suspends accounting if ScreenSaver triggers.
 
@@ -20,3 +20,8 @@ Installation
 ------------
 
     go get github.com/dim13/gone
+
+Caveats
+-------
+
+For _xmonad_ Window Manager _EwmhDesktop_ extension is required.
