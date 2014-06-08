@@ -207,7 +207,7 @@ func (t Tracker) cleanup(d time.Duration) {
 			log.Println("removing", k)
 			log.SetOutput(w)
 			log.Println("%s %s %s %s",
-				k.Class, k.Name, v.Spent, v.Seen)
+				v.Seen, v.Spent, k.Class, k.Name)
 			log.SetOutput(os.Stderr)
 			delete(t, k)
 		}
