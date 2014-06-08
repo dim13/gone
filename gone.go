@@ -202,23 +202,42 @@ func (t Tracker) collect() {
 	}
 }
 
-func (t Tracker) cleanup(d time.Duration) {
-	w, err := os.OpenFile(logf, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+func openLog(fname string) *os.File {
+	f, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer w.Close()
+	return f
+}
+
+func (t Tracker) forget(k Window, f *os.File) {
+	log.Println("removing", k)
+	log.SetOutput(f)
+	v := t[k]
+	log.Println(v.Seen.Format("2006/01/02 15:04:05"),
+		v.Spent, k.Class, k.Name)
+	log.SetOutput(os.Stderr)
+	delete(t, k)
+}
+
+func (t Tracker) cleanup(d time.Duration) {
+	f := openLog(logf)
+	defer f.Close()
 	m.Lock()
 	for k, v := range t {
 		if time.Since(v.Seen) > d {
-			log.Println("removing", k)
-			log.SetOutput(w)
-			log.Println(v.Seen.Format("2006/01/02 15:04:05"),
-				v.Spent, k.Class, k.Name)
-			log.SetOutput(os.Stderr)
-			delete(t, k)
-
+			t.forget(k, f)
 		}
+	}
+	m.Unlock()
+}
+
+func (t Tracker) reset() {
+	f := openLog(logf)
+	defer f.Close()
+	m.Lock()
+	for k := range t {
+		t.forget(k, f)
 	}
 	m.Unlock()
 }
@@ -254,14 +273,6 @@ func (t Tracker) store(fname string) {
 		log.Println(err)
 	}
 	os.Rename(fname+".tmp", fname)
-}
-
-func (t Tracker) reset() {
-	m.Lock()
-	for k := range t {
-		delete(t, k)
-	}
-	m.Unlock()
 }
 
 type Index struct {
