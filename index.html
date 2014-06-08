@@ -41,11 +41,8 @@
 					['{{.Class}}', {{.Spent.Minutes}}],
 					{{end}}
 				]);
-				var options = {'title': 'Gone Time',
-					'width': 300,
-					'height': 300};
 				var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
-				chart.draw(data, options);
+				chart.draw(data);
 			}
 		</script>
 	</head>
