@@ -19,7 +19,8 @@ import (
 
 const (
 	port    = ":8001"
-	file    = "dump.gob"
+	dump    = "dump.gob"
+	logf    = "gone.log"
 	unknown = "unknown"
 )
 
@@ -196,9 +197,18 @@ func (t Tracker) collect() {
 }
 
 func (t Tracker) cleanup(d time.Duration) {
+	w, err := os.OpenFile(logf, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer w.Close()
 	for k, v := range t {
 		if time.Since(v.Seen) > d {
 			log.Println("removing", k)
+			log.SetOutput(w)
+			log.Println("%s %s %s %s",
+				k.Class, k.Name, v.Spent, v.Seen)
+			log.SetOutput(os.Stderr)
 			delete(t, k)
 		}
 	}
@@ -318,12 +328,12 @@ func resetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	tracks.load(file)
+	tracks.load(dump)
 	go tracks.collect()
 	go func() {
 		for {
 			tracks.cleanup(8 * time.Hour)
-			tracks.store(file)
+			tracks.store(dump)
 			time.Sleep(time.Minute)
 		}
 	}()
