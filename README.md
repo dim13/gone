@@ -26,7 +26,7 @@ Caveats
 
 For _xmonad_ Window Manager _EwmhDesktop_ extension is required.
 
-_xscreensaver_ seems to ignore MIT-SCREEN-SAVER extention.
+_xscreensaver_ seems to ignore MIT-SCREEN-SAVER extension.
 Thus you have to either use xidle/xlock instead and/or activate X11 ScreenSaver
 
     xset s 600
