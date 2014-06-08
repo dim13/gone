@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"sync"
 	"time"
 
 	"github.com/BurntSushi/xgb"
@@ -28,6 +29,7 @@ var (
 	tracks = make(Tracker)
 	tmpl   = template.Must(template.ParseFiles("index.html"))
 	zzz    bool
+	m      sync.Mutex
 )
 
 type Tracker map[Window]*Track
@@ -126,11 +128,13 @@ func (x Xorg) spy(w xproto.Window) {
 
 func (x Xorg) update(t Tracker) (prev *Track) {
 	if win, ok := x.winName(); ok {
+		m.Lock()
 		if _, ok := t[win]; !ok {
 			t[win] = new(Track)
 		}
 		t[win].Seen = time.Now()
 		prev = t[win]
+		m.Unlock()
 	}
 	return
 }
@@ -179,7 +183,9 @@ func (t Tracker) collect() {
 		switch event := ev.(type) {
 		case xproto.PropertyNotifyEvent:
 			if prev != nil {
+				m.Lock()
 				prev.Spent += time.Since(prev.Seen)
+				m.Unlock()
 			}
 			prev = x.update(t)
 		case screensaver.NotifyEvent:
@@ -202,6 +208,7 @@ func (t Tracker) cleanup(d time.Duration) {
 		log.Fatal(err)
 	}
 	defer w.Close()
+	m.Lock()
 	for k, v := range t {
 		if time.Since(v.Seen) > d {
 			log.Println("removing", k)
@@ -212,6 +219,7 @@ func (t Tracker) cleanup(d time.Duration) {
 			delete(t, k)
 		}
 	}
+	m.Unlock()
 }
 
 func (t Tracker) load(fname string) {
@@ -222,7 +230,9 @@ func (t Tracker) load(fname string) {
 	}
 	defer dump.Close()
 	dec := gob.NewDecoder(dump)
+	m.Lock()
 	err = dec.Decode(&t)
+	m.Unlock()
 	if err != nil {
 		log.Println(err)
 	}
@@ -236,7 +246,9 @@ func (t Tracker) store(fname string) {
 	}
 	defer dump.Close()
 	enc := gob.NewEncoder(dump)
+	m.Lock()
 	err = enc.Encode(t)
+	m.Unlock()
 	if err != nil {
 		log.Println(err)
 	}
@@ -244,9 +256,11 @@ func (t Tracker) store(fname string) {
 }
 
 func (t Tracker) reset() {
+	m.Lock()
 	for k := range t {
 		delete(t, k)
 	}
+	m.Unlock()
 }
 
 type Index struct {
@@ -279,6 +293,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	classtotal := make(map[string]time.Duration)
 
+	m.Lock()
 	for k, v := range tracks {
 		classtotal[k.Class] += v.Spent
 		idx.Total += v.Spent
@@ -290,6 +305,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 			Name:  k.Name,
 			Spent: v.Spent})
 	}
+	m.Unlock()
 	for k, v := range classtotal {
 		idx.Classes = append(idx.Classes, Record{Class: k, Spent: v})
 	}
@@ -307,6 +323,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 func dumpHandler(w http.ResponseWriter, r *http.Request) {
 	var rec Records
 
+	m.Lock()
 	for k, v := range tracks {
 		rec = append(rec, Record{
 			Class: k.Class,
@@ -314,6 +331,7 @@ func dumpHandler(w http.ResponseWriter, r *http.Request) {
 			Spent: v.Spent,
 			Seen:  v.Seen})
 	}
+	m.Unlock()
 
 	data, err := json.MarshalIndent(rec, "", "\t")
 	if err != nil {
