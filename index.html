@@ -11,6 +11,8 @@
 			}
 			aside {
 				float: right;
+			}
+			#box {
 				border: thin solid #428a42;
 				background: #efffef;
 				padding: 1em;
@@ -26,11 +28,31 @@
 				text-decoration: none;
 			}
 		</style>
+		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+		<script type="text/javascript">
+			google.load('visualization', '1.0', {'packages':['corechart']});
+			google.setOnLoadCallback(drawChart);
+			function drawChart() {
+				var data = new google.visualization.DataTable();
+				data.addColumn('string', 'Class');
+				data.addColumn('number', 'Time');
+				data.addRows([
+					{{range .Classes}}
+					['{{.Class}}', {{.Spent.Minutes}}],
+					{{end}}
+				]);
+				var options = {'title': 'Gone Time',
+					'width': 300,
+					'height': 300};
+				var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+				chart.draw(data, options);
+			}
+		</script>
 	</head>
 	<body>
 		<h1>{{.Title}}{{if .Zzz}} Zzz&hellip;{{end}}</h1>
 		<aside>
-		<h3>Gross time</h3>
+		<section id="box">
 		<table>
 		{{range .Classes}}
 		<tr>
@@ -43,11 +65,16 @@
 			<td id="total">{{.Total}}</td>
 		</tr>
 		</table>
-		<h3>Functions</h3>
+		</section>
+		<section id="funcs">
 		<ul>
 		<li><a href="/gone.json">Dump</a></li>
 		<li><a href="/reset">Reset</a> (take care!)</li>
 		</ul>
+		</section>
+		<section id="chart">
+		<div id="chart_div"></div>
+		</section>
 		</aside>
 		<table>
 		<tr>
