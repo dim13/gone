@@ -19,7 +19,7 @@ import (
 
 const (
 	port    = ":8001"
-	dump    = "dump.gob"
+	dump    = "gone.gob"
 	logf    = "gone.log"
 	unknown = "unknown"
 )
@@ -339,7 +339,7 @@ func main() {
 	}()
 	log.Println("listen on", port)
 	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/dump.json", dumpHandler)
+	http.HandleFunc("/gone.json", dumpHandler)
 	http.HandleFunc("/reset", resetHandler)
 	http.ListenAndServe(port, nil)
 }
