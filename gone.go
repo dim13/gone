@@ -213,10 +213,11 @@ func (t Tracker) cleanup(d time.Duration) {
 		if time.Since(v.Seen) > d {
 			log.Println("removing", k)
 			log.SetOutput(w)
-			log.Println(v.Seen.Format("2006/01/02 15:05:05"),
+			log.Println(v.Seen.Format("2006/01/02 15:04:05"),
 				v.Spent, k.Class, k.Name)
 			log.SetOutput(os.Stderr)
 			delete(t, k)
+
 		}
 	}
 	m.Unlock()
