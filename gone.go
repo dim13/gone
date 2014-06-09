@@ -54,7 +54,7 @@ type Xorg struct {
 }
 
 func (t Track) String() string {
-	return fmt.Sprint(t.Spent)
+	return fmt.Sprintf("%s %s", t.Seen.Format("2006/01/02 15:04:05"), t.Spent)
 }
 
 func (w Window) String() string {
@@ -217,8 +217,7 @@ func openLog(fname string) logger {
 func (l logger) logDelete(w Window, t Track) {
 	log.Println("removing", w.Name)
 	log.SetOutput(l)
-	log.Println(t.Seen.Format("2006/01/02 15:04:05"),
-		t.Spent, w.Class, w.Name)
+	log.Println(t, w)
 	log.SetOutput(os.Stderr)
 }
 
