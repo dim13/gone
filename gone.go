@@ -214,7 +214,7 @@ func openLog(fname string) logger {
 	return logger{f}
 }
 
-func (l logger) logForget(w Window, t Track) {
+func (l logger) logDelete(w Window, t Track) {
 	log.Println("removing", w.Name)
 	log.SetOutput(l)
 	log.Println(t.Seen.Format("2006/01/02 15:04:05"),
@@ -228,7 +228,7 @@ func (t Tracker) cleanup(d time.Duration) {
 	m.Lock()
 	for k, v := range t {
 		if time.Since(v.Seen) > d {
-			f.logForget(k, *v)
+			f.logDelete(k, *v)
 			delete(t, k)
 		}
 	}
@@ -240,7 +240,7 @@ func (t Tracker) reset() {
 	defer f.Close()
 	m.Lock()
 	for k, v := range t {
-		f.logForget(k, *v)
+		f.logDelete(k, *v)
 		delete(t, k)
 	}
 	m.Unlock()
