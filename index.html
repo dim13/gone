@@ -42,37 +42,43 @@
 					{{end}}
 				]);
 				var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
-				chart.draw(data);
+				var options = {
+					legend: 'none'
+				};
+				chart.draw(data, options);
 			}
 		</script>
 	</head>
 	<body>
 		<h1>{{.Title}}{{if .Zzz}} Zzz&hellip;{{end}}</h1>
 		<aside>
-		<section id="box">
-		<table>
-		{{range .Classes}}
-		<tr>
-			<td><a href="/{{.Class}}">{{.Class}}</a></td>
-			<td>{{.Spent}}</td>
-		</tr>
-		{{end}}
-		<tr>
-			<td><a href="/">&Sigma;</a></td>
-			<td id="total">{{.Total}}</td>
-		</tr>
-		</table>
-		</section>
-		<section id="funcs">
-		<ul>
-		<li><a href="/gone.json">Dump</a></li>
-		<li><a href="/reset">Reset</a> (take care!)</li>
-		</ul>
-		</section>
-		<section id="chart">
-		<div id="chart_div"></div>
-		</section>
+			<section id="box">
+			<table>
+			{{range .Classes}}
+			<tr>
+				<td><a href="/{{.Class}}">{{.Class}}</a></td>
+				<td>{{.Spent}}</td>
+			</tr>
+			{{end}}
+			<tr>
+				<td><a href="/">&Sigma;</a></td>
+				<td id="total">{{.Total}}</td>
+			</tr>
+			</table>
+			</section>
+
+			<section id="chart">
+			<div id="chart_div"></div>
+			</section>
+
+			<section id="funcs">
+			<ul>
+			<li><a href="/gone.json">Dump</a></li>
+			<li><a href="/reset">Reset</a> (take care!)</li>
+			</ul>
+			</section>
 		</aside>
+
 		<table>
 		<tr>
 			<th>Class</th>
