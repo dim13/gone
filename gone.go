@@ -30,6 +30,7 @@ var (
 	tmpl   = template.Must(template.ParseFiles("index.html"))
 	zzz    bool
 	m      sync.Mutex
+	logger *log.Logger
 )
 
 type Tracker map[Window]*Track
@@ -202,32 +203,11 @@ func (t Tracker) collect() {
 	}
 }
 
-type logger struct {
-	*os.File
-}
-
-func openLog(fname string) logger {
-	f, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return logger{f}
-}
-
-func (l logger) logDelete(w Window, t Track) {
-	log.Println("removing", w.Name)
-	log.SetOutput(l)
-	log.Println(t, w)
-	log.SetOutput(os.Stderr)
-}
-
 func (t Tracker) cleanup(d time.Duration) {
-	f := openLog(logf)
-	defer f.Close()
 	m.Lock()
 	for k, v := range t {
 		if time.Since(v.Seen) > d {
-			f.logDelete(k, *v)
+			logger.Println(v, k)
 			delete(t, k)
 		}
 	}
@@ -235,11 +215,9 @@ func (t Tracker) cleanup(d time.Duration) {
 }
 
 func (t Tracker) reset() {
-	f := openLog(logf)
-	defer f.Close()
 	m.Lock()
 	for k, v := range t {
-		f.logDelete(k, *v)
+		logger.Println(v, k)
 		delete(t, k)
 	}
 	m.Unlock()
@@ -361,7 +339,15 @@ func resetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	logfile, err := os.OpenFile(logf, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer logfile.Close()
+	logger = log.New(logfile, "", log.LstdFlags)
+
 	tracks.load(dump)
+
 	go tracks.collect()
 	go func() {
 		for {
@@ -374,7 +360,7 @@ func main() {
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/gone.json", dumpHandler)
 	http.HandleFunc("/reset", resetHandler)
-	err := http.ListenAndServe(port, nil)
+	err = http.ListenAndServe(port, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
