@@ -202,22 +202,24 @@ func (t Tracker) collect() {
 	}
 }
 
-func openLog(fname string) *os.File {
+type logger struct {
+	*os.File
+}
+
+func openLog(fname string) logger {
 	f, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return f
+	return logger{f}
 }
 
-func (t Tracker) forget(k Window, f *os.File) {
-	log.Println("removing", k)
-	log.SetOutput(f)
-	v := t[k]
-	log.Println(v.Seen.Format("2006/01/02 15:04:05"),
-		v.Spent, k.Class, k.Name)
+func (l logger) logForget(w Window, t Track) {
+	log.Println("removing", w.Name)
+	log.SetOutput(l)
+	log.Println(t.Seen.Format("2006/01/02 15:04:05"),
+		t.Spent, w.Class, w.Name)
 	log.SetOutput(os.Stderr)
-	delete(t, k)
 }
 
 func (t Tracker) cleanup(d time.Duration) {
@@ -226,7 +228,8 @@ func (t Tracker) cleanup(d time.Duration) {
 	m.Lock()
 	for k, v := range t {
 		if time.Since(v.Seen) > d {
-			t.forget(k, f)
+			f.logForget(k, *v)
+			delete(t, k)
 		}
 	}
 	m.Unlock()
@@ -236,8 +239,9 @@ func (t Tracker) reset() {
 	f := openLog(logf)
 	defer f.Close()
 	m.Lock()
-	for k := range t {
-		t.forget(k, f)
+	for k, v := range t {
+		f.logForget(k, *v)
+		delete(t, k)
 	}
 	m.Unlock()
 }
