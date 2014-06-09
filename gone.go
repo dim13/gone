@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	port    = ":8001"
+	port    = "127.0.0.1:8001"
 	dump    = "gone.gob"
 	logf    = "gone.log"
 	unknown = "unknown"
