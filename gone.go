@@ -102,11 +102,12 @@ func (x Xorg) class(w xproto.Window) string {
 	if err != nil {
 		return unknown
 	}
-	i := bytes.IndexByte(class.Value, 0)
-	if i == -1 || string(class.Value[:i]) == "" {
-		return unknown
+	zero := []byte{0}
+	s := bytes.Split(bytes.TrimSuffix(class.Value, zero), zero)
+	if l := len(s); l > 0 && len(s[l-1]) != 0 {
+		return string(s[l-1])
 	}
-	return string(class.Value[:i])
+	return unknown
 }
 
 func (x Xorg) winName() (Window, bool) {
