@@ -193,11 +193,11 @@ func (t Tracker) collect() {
 		case screensaver.NotifyEvent:
 			switch event.State {
 			case screensaver.StateOn:
-				fmt.Println("away from keyboard")
+				log.Println("away from keyboard")
 				current = nil
 				zzz = true
 			default:
-				fmt.Println("back to keyboard")
+				log.Println("back to keyboard")
 				zzz = false
 			}
 		}
