@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -22,7 +23,6 @@ const (
 	port    = "127.0.0.1:8001"
 	dump    = "gone.gob"
 	logf    = "gone.log"
-	unknown = "unknown"
 )
 
 var (
@@ -83,31 +83,34 @@ func (x Xorg) active() xproto.Window {
 	return xproto.Window(xgb.Get32(p.Value))
 }
 
-func (x Xorg) name(w xproto.Window) string {
+func (x Xorg) name(w xproto.Window) (string, error) {
 	name, err := x.property(w, x.netNameAtom)
 	if err != nil {
-		return unknown
+		return "", err
 	}
 	if string(name.Value) == "" {
 		name, err = x.property(w, x.nameAtom)
-		if err != nil || string(name.Value) == "" {
-			return unknown
+		if err != nil {
+			return "", err
+		}
+		if string(name.Value) == "" {
+			return "", errors.New("empty value")
 		}
 	}
-	return string(name.Value)
+	return string(name.Value), nil
 }
 
-func (x Xorg) class(w xproto.Window) string {
+func (x Xorg) class(w xproto.Window) (string, error) {
 	class, err := x.property(w, x.classAtom)
 	if err != nil {
-		return unknown
+		return "", err
 	}
 	zero := []byte{0}
 	s := bytes.Split(bytes.TrimSuffix(class.Value, zero), zero)
 	if l := len(s); l > 0 && len(s[l-1]) != 0 {
-		return string(s[l-1])
+		return string(s[l-1]), nil
 	}
-	return unknown
+	return "", errors.New("empty class")
 }
 
 func (x Xorg) winName() (Window, bool) {
@@ -116,10 +119,18 @@ func (x Xorg) winName() (Window, bool) {
 	if windowId == 0 {
 		return Window{}, false
 	}
+	class, err := x.class(windowId)
+	if err != nil {
+		return Window{}, false
+	}
+	name, err := x.name(windowId)
+	if err != nil {
+		return Window{}, false
+	}
 	x.spy(windowId)
 	return Window{
-		Class: x.class(windowId),
-		Name:  x.name(windowId),
+		Class: class,
+		Name:  name,
 	}, true
 }
 
