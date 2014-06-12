@@ -1,4 +1,4 @@
-// Gone Time Tracker -- Where has my time gone?
+// Gone Time Tracker -or- Where has my time gone?
 package main
 
 import (
@@ -21,9 +21,9 @@ import (
 )
 
 const (
-	port    = "127.0.0.1:8001"
-	dump    = "gone.gob"
-	logf    = "gone.log"
+	port = "127.0.0.1:8001"
+	dump = "gone.gob"
+	logf = "gone.log"
 )
 
 var (
@@ -114,7 +114,7 @@ func (x Xorg) class(w xproto.Window) (string, error) {
 	return "", errors.New("empty class")
 }
 
-func (x Xorg) winName() (Window, bool) {
+func (x Xorg) window() (Window, bool) {
 	id := x.active()
 	/* skip invalid window id */
 	if id == 0 {
@@ -141,7 +141,7 @@ func (x Xorg) spy(w xproto.Window) {
 }
 
 func (x Xorg) update(t Tracker) (current *Track) {
-	if win, ok := x.winName(); ok {
+	if win, ok := x.window(); ok {
 		m.Lock()
 		if _, ok := t[win]; !ok {
 			t[win] = new(Track)
