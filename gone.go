@@ -1,3 +1,4 @@
+// Gone Time Tracker -- Where has my time gone?
 package main
 
 import (
@@ -114,20 +115,20 @@ func (x Xorg) class(w xproto.Window) (string, error) {
 }
 
 func (x Xorg) winName() (Window, bool) {
-	windowId := x.active()
+	id := x.active()
 	/* skip invalid window id */
-	if windowId == 0 {
+	if id == 0 {
 		return Window{}, false
 	}
-	class, err := x.class(windowId)
+	class, err := x.class(id)
 	if err != nil {
 		return Window{}, false
 	}
-	name, err := x.name(windowId)
+	name, err := x.name(id)
 	if err != nil {
 		return Window{}, false
 	}
-	x.spy(windowId)
+	x.spy(id)
 	return Window{
 		Class: class,
 		Name:  name,
