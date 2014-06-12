@@ -145,7 +145,7 @@ func connect() Xorg {
 	var x Xorg
 	var err error
 
-	x.X, err = xgb.NewConn()
+	x.X, err = xgb.NewConnDisplay(":0")
 	if err != nil {
 		log.Fatal("xgb: ", err)
 	}
