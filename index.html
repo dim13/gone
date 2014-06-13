@@ -21,11 +21,14 @@
 			.odd {
 				background: #efefef;
 			}
-			#total {
+			.total {
 				border-top: thin solid black;
 			}
 			a {
 				text-decoration: none;
+			}
+			.right {
+				text-align: right;
 			}
 		</style>
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -38,7 +41,7 @@
 				data.addColumn('number', 'Time');
 				data.addRows([
 					{{range .Classes}}
-					['{{.Class}}', {{.Spent.Minutes}}],
+					['{{.Class}}', {{.Spent.Seconds}}],
 					{{end}}
 				]);
 				var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
@@ -57,12 +60,12 @@
 			{{range .Classes}}
 			<tr>
 				<td><a href="/{{.Class}}">{{.Class}}</a></td>
-				<td>{{.Spent}}</td>
+				<td class="right">{{.Spent}}</td>
 			</tr>
 			{{end}}
 			<tr>
 				<td><a href="/">&Sigma;</a></td>
-				<td id="total">{{.Total}}</td>
+				<td class="total right">{{.Total}}</td>
 			</tr>
 			</table>
 			</section>
@@ -89,7 +92,7 @@
 		<tr {{if .Odd}}class="odd"{{end}}>
 			<td><a href="/{{.Class}}">{{.Class}}</a></td>
 			<td>{{.Name}}</td>
-			<td>{{.Spent}}</td>
+			<td class="right">{{.Spent}}</td>
 		</tr>
 		{{end}}
 		</table>
