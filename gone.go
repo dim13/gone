@@ -157,7 +157,11 @@ func connect() Xorg {
 	var x Xorg
 	var err error
 
-	x.X, err = xgb.NewConnDisplay(":0")
+	display := os.Getenv("DISPLAY")
+	if display == "" {
+		display = ":0"
+	}
+	x.X, err = xgb.NewConnDisplay(display)
 	if err != nil {
 		log.Fatal("xgb: ", err)
 	}
