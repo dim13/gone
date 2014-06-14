@@ -321,6 +321,7 @@ func (d Duration) String() string {
 	}
 	return ret + fmt.Sprintf("%ds", s)
 }
+
 func (d Duration) Seconds() int {
 	return int(time.Duration(d).Seconds())
 }
