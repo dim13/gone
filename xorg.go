@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"time"
 
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/screensaver"
@@ -102,10 +103,6 @@ func (x Xorg) Close() {
 	x.conn.Close()
 }
 
-func (x Xorg) WaitForEvent() (xgb.Event, xgb.Error) {
-	return x.conn.WaitForEvent()
-}
-
 func Connect() Xorg {
 	var x Xorg
 	var err error
@@ -138,4 +135,40 @@ func Connect() Xorg {
 	x.spy(x.root)
 
 	return x
+}
+
+func (x Xorg) Collect(t Tracker) {
+	var current *Track
+
+	if win, ok := x.window(); ok {
+		current = t.Update(win)
+	}
+	for {
+		ev, everr := x.conn.WaitForEvent()
+		if everr != nil {
+			log.Println("wait for event:", everr)
+			continue
+		}
+		switch event := ev.(type) {
+		case xproto.PropertyNotifyEvent:
+			if current != nil {
+				m.Lock()
+				current.Spent += time.Since(current.Seen)
+				m.Unlock()
+			}
+			if win, ok := x.window(); ok {
+				current = t.Update(win)
+			}
+		case screensaver.NotifyEvent:
+			switch event.State {
+			case screensaver.StateOn:
+				log.Println("away from keyboard")
+				current = nil
+				zzz = true
+			default:
+				log.Println("back to keyboard")
+				zzz = false
+			}
+		}
+	}
 }

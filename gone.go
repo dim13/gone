@@ -10,8 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/BurntSushi/xgb/screensaver"
-	"github.com/BurntSushi/xgb/xproto"
 	"github.com/mewkiz/pkg/goutil"
 )
 
@@ -35,6 +33,10 @@ func init() {
 	dumpFileName = filepath.Join(goneDir, "gone.gob")
 	logFileName = filepath.Join(goneDir, "gone.log")
 	indexFileName = filepath.Join(goneDir, "index.html")
+}
+
+type Tracker interface {
+	Update(Window) *Track
 }
 
 type Tracks map[Window]*Track
@@ -66,44 +68,6 @@ func (t Tracks) Update(w Window) (current *Track) {
 	current = t[w]
 	m.Unlock()
 	return
-}
-
-func (t Tracks) Collect() {
-	var current *Track
-	x := Connect()
-	defer x.Close()
-
-	if win, ok := x.window(); ok {
-		current = t.Update(win)
-	}
-	for {
-		ev, everr := x.WaitForEvent()
-		if everr != nil {
-			log.Println("wait for event:", everr)
-			continue
-		}
-		switch event := ev.(type) {
-		case xproto.PropertyNotifyEvent:
-			if current != nil {
-				m.Lock()
-				current.Spent += time.Since(current.Seen)
-				m.Unlock()
-			}
-			if win, ok := x.window(); ok {
-				current = t.Update(win)
-			}
-		case screensaver.NotifyEvent:
-			switch event.State {
-			case screensaver.StateOn:
-				log.Println("away from keyboard")
-				current = nil
-				zzz = true
-			default:
-				log.Println("back to keyboard")
-				zzz = false
-			}
-		}
-	}
 }
 
 func (t Tracks) Remove(d time.Duration) {
@@ -164,6 +128,9 @@ func (t Tracks) Cleanup() {
 }
 
 func main() {
+	X := Connect()
+	defer X.Close()
+
 	logfile, err := os.OpenFile(logFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal(err)
@@ -173,7 +140,7 @@ func main() {
 
 	tracks = Load(dumpFileName)
 
-	go tracks.Collect()
+	go X.Collect(tracks)
 	go tracks.Cleanup()
 
 	webReporter("127.0.0.1:8001")
