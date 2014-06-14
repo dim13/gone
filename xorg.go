@@ -13,7 +13,7 @@ import (
 )
 
 type Xorg struct {
-	X           *xgb.Conn
+	conn        *xgb.Conn
 	root        xproto.Window
 	activeAtom  *xproto.InternAtomReply
 	netNameAtom *xproto.InternAtomReply
@@ -22,7 +22,7 @@ type Xorg struct {
 }
 
 func (x Xorg) atom(aname string) *xproto.InternAtomReply {
-	a, err := xproto.InternAtom(x.X, true, uint16(len(aname)), aname).Reply()
+	a, err := xproto.InternAtom(x.conn, true, uint16(len(aname)), aname).Reply()
 	if err != nil {
 		log.Fatal("atom: ", err)
 	}
@@ -30,7 +30,7 @@ func (x Xorg) atom(aname string) *xproto.InternAtomReply {
 }
 
 func (x Xorg) property(w xproto.Window, a *xproto.InternAtomReply) (*xproto.GetPropertyReply, error) {
-	return xproto.GetProperty(x.X, false, w, a.Atom,
+	return xproto.GetProperty(x.conn, false, w, a.Atom,
 		xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
 }
 
@@ -94,12 +94,16 @@ func (x Xorg) window() (Window, bool) {
 }
 
 func (x Xorg) spy(w xproto.Window) {
-	xproto.ChangeWindowAttributes(x.X, w, xproto.CwEventMask,
+	xproto.ChangeWindowAttributes(x.conn, w, xproto.CwEventMask,
 		[]uint32{xproto.EventMaskPropertyChange})
 }
 
 func (x Xorg) Close() {
-	x.X.Close()
+	x.conn.Close()
+}
+
+func (x Xorg) WaitForEvent() (xgb.Event, xgb.Error) {
+	return x.conn.WaitForEvent()
 }
 
 func Connect() Xorg {
@@ -110,21 +114,21 @@ func Connect() Xorg {
 	if display == "" {
 		display = ":0"
 	}
-	x.X, err = xgb.NewConnDisplay(display)
+	x.conn, err = xgb.NewConnDisplay(display)
 	if err != nil {
 		log.Fatal("xgb: ", err)
 	}
 
-	err = screensaver.Init(x.X)
+	err = screensaver.Init(x.conn)
 	if err != nil {
 		log.Fatal("screensaver: ", err)
 	}
 
-	setup := xproto.Setup(x.X)
-	x.root = setup.DefaultScreen(x.X).Root
+	setup := xproto.Setup(x.conn)
+	x.root = setup.DefaultScreen(x.conn).Root
 
 	drw := xproto.Drawable(x.root)
-	screensaver.SelectInput(x.X, drw, screensaver.EventNotifyMask)
+	screensaver.SelectInput(x.conn, drw, screensaver.EventNotifyMask)
 
 	x.activeAtom = x.atom("_NET_ACTIVE_WINDOW")
 	x.netNameAtom = x.atom("_NET_WM_NAME")

@@ -76,7 +76,7 @@ func (t Tracks) Collect() {
 
 	current := t.Update(x)
 	for {
-		ev, everr := x.X.WaitForEvent()
+		ev, everr := x.WaitForEvent()
 		if everr != nil {
 			log.Println("wait for event:", everr)
 			continue
