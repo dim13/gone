@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"sort"
 	"sync"
 	"time"
@@ -18,6 +19,7 @@ import (
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/screensaver"
 	"github.com/BurntSushi/xgb/xproto"
+	"github.com/mewkiz/pkg/goutil"
 )
 
 const (
@@ -27,12 +29,22 @@ const (
 )
 
 var (
-	tracks = make(Tracker)
-	tmpl   = template.Must(template.ParseFiles("index.html"))
-	zzz    bool
-	m      sync.Mutex
-	logger *log.Logger
+	goneDir string
+	tracks  = make(Tracker)
+	tmpl    *template.Template
+	zzz     bool
+	m       sync.Mutex
+	logger  *log.Logger
 )
+
+func init() {
+	var err error
+	goneDir, err = goutil.SrcDir("github.com/dim13/gone")
+	if err != nil {
+		log.Fatal("init: ", err)
+	}
+	tmpl = template.Must(template.ParseFiles(path.Join(goneDir, "index.html")))
+}
 
 type Tracker map[Window]*Track
 
@@ -374,20 +386,21 @@ func resetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	logfile, err := os.OpenFile(logf, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	logfile, err := os.OpenFile(path.Join(goneDir, logf), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer logfile.Close()
 	logger = log.New(logfile, "", log.LstdFlags)
 
-	tracks.load(dump)
+	dumpPath := path.Join(goneDir, dump)
+	tracks.load(dumpPath)
 
 	go tracks.collect()
 	go func() {
 		for {
 			tracks.cleanup(8 * time.Hour)
-			tracks.store(dump)
+			tracks.store(dumpPath)
 			time.Sleep(time.Minute)
 		}
 	}()
