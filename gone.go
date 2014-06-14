@@ -57,7 +57,7 @@ func (w Window) String() string {
 	return fmt.Sprintf("%s %s", w.Class, w.Name)
 }
 
-func (t Tracks) update(x Xorg) (current *Track) {
+func (t Tracks) Update(x Xorg) (current *Track) {
 	if win, ok := x.window(); ok {
 		m.Lock()
 		if _, ok := t[win]; !ok {
@@ -70,11 +70,11 @@ func (t Tracks) update(x Xorg) (current *Track) {
 	return
 }
 
-func (t Tracks) collect() {
-	x := connect()
-	defer x.X.Close()
+func (t Tracks) Collect() {
+	x := Connect()
+	defer x.Close()
 
-	current := t.update(x)
+	current := t.Update(x)
 	for {
 		ev, everr := x.X.WaitForEvent()
 		if everr != nil {
@@ -88,7 +88,7 @@ func (t Tracks) collect() {
 				current.Spent += time.Since(current.Seen)
 				m.Unlock()
 			}
-			current = t.update(x)
+			current = t.Update(x)
 		case screensaver.NotifyEvent:
 			switch event.State {
 			case screensaver.StateOn:
@@ -103,7 +103,7 @@ func (t Tracks) collect() {
 	}
 }
 
-func (t Tracks) cleanup(d time.Duration) {
+func (t Tracks) Cleanup(d time.Duration) {
 	m.Lock()
 	for k, v := range t {
 		if time.Since(v.Seen) > d {
@@ -114,7 +114,7 @@ func (t Tracks) cleanup(d time.Duration) {
 	m.Unlock()
 }
 
-func load(fname string) Tracks {
+func Load(fname string) Tracks {
 	t := make(Tracks)
 	dump, err := os.Open(fname)
 	if err != nil {
@@ -132,7 +132,7 @@ func load(fname string) Tracks {
 	return t
 }
 
-func (t Tracks) store(fname string) {
+func (t Tracks) Store(fname string) {
 	tmp := fname + ".tmp"
 	dump, err := os.Create(tmp)
 	if err != nil {
@@ -160,13 +160,13 @@ func main() {
 	defer logfile.Close()
 	logger = log.New(logfile, "", log.LstdFlags)
 
-	tracks = load(dumpFileName)
+	tracks = Load(dumpFileName)
 
-	go tracks.collect()
+	go tracks.Collect()
 	go func() {
 		for {
-			tracks.cleanup(8 * time.Hour)
-			tracks.store(dumpFileName)
+			tracks.Cleanup(8 * time.Hour)
+			tracks.Store(dumpFileName)
 			time.Sleep(time.Minute)
 		}
 	}()

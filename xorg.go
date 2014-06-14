@@ -98,7 +98,11 @@ func (x Xorg) spy(w xproto.Window) {
 		[]uint32{xproto.EventMaskPropertyChange})
 }
 
-func connect() Xorg {
+func (x Xorg) Close() {
+	x.X.Close()
+}
+
+func Connect() Xorg {
 	var x Xorg
 	var err error
 
