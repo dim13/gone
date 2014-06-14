@@ -5,7 +5,6 @@ import (
 	"encoding/gob"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 	"sync"
@@ -17,7 +16,6 @@ import (
 )
 
 const (
-	port = "127.0.0.1:8001"
 	dump = "gone.gob"
 	logf = "gone.log"
 )
@@ -172,12 +170,6 @@ func main() {
 			time.Sleep(time.Minute)
 		}
 	}()
-	log.Println("listen on", port)
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/gone.json", dumpHandler)
-	http.HandleFunc("/reset", resetHandler)
-	err = http.ListenAndServe(port, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+
+	webReporter("127.0.0.1:8001")
 }

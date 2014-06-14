@@ -120,3 +120,14 @@ func resetHandler(w http.ResponseWriter, r *http.Request) {
 	tracks.cleanup(0)
 	http.Redirect(w, r, "/", http.StatusFound)
 }
+
+func webReporter(port string) {
+	log.Println("listen on", port)
+	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/gone.json", dumpHandler)
+	http.HandleFunc("/reset", resetHandler)
+	err := http.ListenAndServe(port, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
