@@ -20,6 +20,7 @@ type Xorg struct {
 	netNameAtom *xproto.InternAtomReply
 	nameAtom    *xproto.InternAtomReply
 	classAtom   *xproto.InternAtomReply
+	event       chan xgb.Event
 }
 
 func (x Xorg) atom(aname string) *xproto.InternAtomReply {
@@ -131,10 +132,31 @@ func Connect() Xorg {
 	x.netNameAtom = x.atom("_NET_WM_NAME")
 	x.nameAtom = x.atom("WM_NAME")
 	x.classAtom = x.atom("WM_CLASS")
+	x.event = make(chan xgb.Event, 1)
 
 	x.spy(x.root)
 
 	return x
+}
+
+func (x Xorg) WaitForEvent() {
+	ev, err := x.conn.WaitForEvent()
+	if err != nil {
+		log.Println("wait for event:", err)
+		x.event <- nil
+		return
+	}
+	x.event <- ev
+}
+
+func (x Xorg) QueryIdle() time.Duration {
+	info, err := screensaver.QueryInfo(x.conn,
+		xproto.Drawable(x.root)).Reply()
+	if err != nil {
+		log.Println("query idle:", err)
+		return 0
+	}
+	return time.Duration(info.MsSinceUserInput) * time.Millisecond
 }
 
 func (x Xorg) Collect(t Tracker) {
@@ -143,31 +165,40 @@ func (x Xorg) Collect(t Tracker) {
 	if win, ok := x.window(); ok {
 		current = t.Update(win)
 	}
+
 	for {
-		ev, everr := x.conn.WaitForEvent()
-		if everr != nil {
-			log.Println("wait for event:", everr)
-			continue
-		}
-		switch event := ev.(type) {
-		case xproto.PropertyNotifyEvent:
-			if current != nil {
-				m.Lock()
-				current.Spent += time.Since(current.Seen)
-				m.Unlock()
+		go x.WaitForEvent()
+
+		select {
+		case event := <-x.event:
+			switch e := event.(type) {
+			case xproto.PropertyNotifyEvent:
+				if current != nil {
+					m.Lock()
+					current.Spent += time.Since(current.Seen)
+					m.Unlock()
+				}
+				if win, ok := x.window(); ok {
+					current = t.Update(win)
+					zzz = false
+				}
+			case screensaver.NotifyEvent:
+				switch e.State {
+				case screensaver.StateOn:
+					log.Println("away from keyboard")
+					current = nil
+					zzz = true
+				default:
+					log.Println("back to keyboard")
+					zzz = false
+				}
 			}
-			if win, ok := x.window(); ok {
-				current = t.Update(win)
-			}
-		case screensaver.NotifyEvent:
-			switch event.State {
-			case screensaver.StateOn:
-				log.Println("away from keyboard")
+		case <-time.After(time.Minute):
+			idle := x.QueryIdle()
+			if zzz == false && idle > 5*time.Minute {
+				log.Println("snoozing")
 				current = nil
 				zzz = true
-			default:
-				log.Println("back to keyboard")
-				zzz = false
 			}
 		}
 	}
