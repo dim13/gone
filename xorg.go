@@ -102,6 +102,15 @@ func connect() Xorg {
 	var x Xorg
 	var err error
 
+	display := os.Getenv("DISPLAY")
+	if display == "" {
+		display = ":0"
+	}
+	x.X, err = xgb.NewConnDisplay(display)
+	if err != nil {
+		log.Fatal("xgb: ", err)
+	}
+
 	err = screensaver.Init(x.X)
 	if err != nil {
 		log.Fatal("screensaver: ", err)
@@ -117,14 +126,6 @@ func connect() Xorg {
 	x.netNameAtom = x.atom("_NET_WM_NAME")
 	x.nameAtom = x.atom("WM_NAME")
 	x.classAtom = x.atom("WM_CLASS")
-	display := os.Getenv("DISPLAY")
-	if display == "" {
-		display = ":0"
-	}
-	x.X, err = xgb.NewConnDisplay(display)
-	if err != nil {
-		log.Fatal("xgb: ", err)
-	}
 
 	x.spy(x.root)
 

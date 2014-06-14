@@ -4,7 +4,6 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -26,18 +25,17 @@ const (
 var (
 	goneDir string
 	tracks  Tracker
-	tmpl    *template.Template
 	zzz     bool
 	m       sync.Mutex
 	logger  *log.Logger
 )
 
 func init() {
-	goneDir, err := goutil.SrcDir("github.com/dim13/gone")
+	var err error
+	goneDir, err = goutil.SrcDir("github.com/dim13/gone")
 	if err != nil {
 		log.Fatal("init: ", err)
 	}
-	tmpl = template.Must(template.ParseFiles(filepath.Join(goneDir, "index.html")))
 }
 
 type Tracker map[Window]*Track

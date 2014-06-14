@@ -4,11 +4,21 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
+	"path/filepath"
 	"sort"
 	"time"
 )
+
+var (
+	tmpl *template.Template
+)
+
+func init() {
+	tmpl = template.Must(template.ParseFiles(filepath.Join(goneDir, "index.html")))
+}
 
 type Index struct {
 	Title   string
