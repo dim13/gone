@@ -20,7 +20,7 @@ var (
 	dumpFileName  string
 	logFileName   string
 	indexFileName string
-	tracks        Tracker
+	tracks        Tracks
 	zzz           bool
 	m             sync.Mutex
 	logger        *log.Logger
@@ -37,7 +37,7 @@ func init() {
 	indexFileName = filepath.Join(goneDir, "index.html")
 }
 
-type Tracker map[Window]*Track
+type Tracks map[Window]*Track
 
 type Track struct {
 	Seen  time.Time
@@ -57,7 +57,7 @@ func (w Window) String() string {
 	return fmt.Sprintf("%s %s", w.Class, w.Name)
 }
 
-func (t Tracker) update(x Xorg) (current *Track) {
+func (t Tracks) update(x Xorg) (current *Track) {
 	if win, ok := x.window(); ok {
 		m.Lock()
 		if _, ok := t[win]; !ok {
@@ -70,7 +70,7 @@ func (t Tracker) update(x Xorg) (current *Track) {
 	return
 }
 
-func (t Tracker) collect() {
+func (t Tracks) collect() {
 	x := connect()
 	defer x.X.Close()
 
@@ -103,7 +103,7 @@ func (t Tracker) collect() {
 	}
 }
 
-func (t Tracker) cleanup(d time.Duration) {
+func (t Tracks) cleanup(d time.Duration) {
 	m.Lock()
 	for k, v := range t {
 		if time.Since(v.Seen) > d {
@@ -114,8 +114,8 @@ func (t Tracker) cleanup(d time.Duration) {
 	m.Unlock()
 }
 
-func load(fname string) Tracker {
-	t := make(Tracker)
+func load(fname string) Tracks {
+	t := make(Tracks)
 	dump, err := os.Open(fname)
 	if err != nil {
 		log.Println(err)
@@ -132,7 +132,7 @@ func load(fname string) Tracker {
 	return t
 }
 
-func (t Tracker) store(fname string) {
+func (t Tracks) store(fname string) {
 	tmp := fname + ".tmp"
 	dump, err := os.Create(tmp)
 	if err != nil {
