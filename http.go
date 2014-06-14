@@ -7,17 +7,14 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"path/filepath"
 	"sort"
 	"time"
 )
 
-var (
-	tmpl *template.Template
-)
+var tmpl *template.Template
 
 func init() {
-	tmpl = template.Must(template.ParseFiles(filepath.Join(goneDir, "index.html")))
+	tmpl = template.Must(template.ParseFiles(indexFileName))
 }
 
 type Index struct {

@@ -15,17 +15,15 @@ import (
 	"github.com/mewkiz/pkg/goutil"
 )
 
-const (
-	dump = "gone.gob"
-	logf = "gone.log"
-)
-
 var (
-	goneDir string
-	tracks  Tracker
-	zzz     bool
-	m       sync.Mutex
-	logger  *log.Logger
+	goneDir       string
+	dumpFileName  string
+	logFileName   string
+	indexFileName string
+	tracks        Tracker
+	zzz           bool
+	m             sync.Mutex
+	logger        *log.Logger
 )
 
 func init() {
@@ -34,6 +32,9 @@ func init() {
 	if err != nil {
 		log.Fatal("init: ", err)
 	}
+	dumpFileName = filepath.Join(goneDir, "gone.gob")
+	logFileName = filepath.Join(goneDir, "gone.log")
+	indexFileName = filepath.Join(goneDir, "index.html")
 }
 
 type Tracker map[Window]*Track
@@ -152,21 +153,20 @@ func (t Tracker) store(fname string) {
 }
 
 func main() {
-	logfile, err := os.OpenFile(filepath.Join(goneDir, logf), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	logfile, err := os.OpenFile(logFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer logfile.Close()
 	logger = log.New(logfile, "", log.LstdFlags)
 
-	dumpPath := filepath.Join(goneDir, dump)
-	tracks = load(dumpPath)
+	tracks = load(dumpFileName)
 
 	go tracks.collect()
 	go func() {
 		for {
 			tracks.cleanup(8 * time.Hour)
-			tracks.store(dumpPath)
+			tracks.store(dumpFileName)
 			time.Sleep(time.Minute)
 		}
 	}()
