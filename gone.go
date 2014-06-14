@@ -243,15 +243,6 @@ func (t Tracker) cleanup(d time.Duration) {
 	m.Unlock()
 }
 
-func (t Tracker) reset() {
-	m.Lock()
-	for k, v := range t {
-		logger.Println(v, k)
-		delete(t, k)
-	}
-	m.Unlock()
-}
-
 func load(fname string) Tracker {
 	t := make(Tracker)
 	dump, err := os.Open(fname)
@@ -387,7 +378,7 @@ func dumpHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func resetHandler(w http.ResponseWriter, r *http.Request) {
-	tracks.reset()
+	tracks.cleanup(0)
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
