@@ -103,7 +103,7 @@ func (t Tracks) Collect() {
 	}
 }
 
-func (t Tracks) Cleanup(d time.Duration) {
+func (t Tracks) Remove(d time.Duration) {
 	m.Lock()
 	for k, v := range t {
 		if time.Since(v.Seen) > d {
@@ -152,6 +152,14 @@ func (t Tracks) Store(fname string) {
 	os.Rename(tmp, fname)
 }
 
+func (t Tracks) Cleanup() {
+	for {
+		tracks.Remove(8 * time.Hour)
+		tracks.Store(dumpFileName)
+		time.Sleep(time.Minute)
+	}
+}
+
 func main() {
 	logfile, err := os.OpenFile(logFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
@@ -163,13 +171,7 @@ func main() {
 	tracks = Load(dumpFileName)
 
 	go tracks.Collect()
-	go func() {
-		for {
-			tracks.Cleanup(8 * time.Hour)
-			tracks.Store(dumpFileName)
-			time.Sleep(time.Minute)
-		}
-	}()
+	go tracks.Cleanup()
 
 	webReporter("127.0.0.1:8001")
 }

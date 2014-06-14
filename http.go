@@ -114,7 +114,7 @@ func dumpHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func resetHandler(w http.ResponseWriter, r *http.Request) {
-	tracks.Cleanup(0)
+	tracks.Remove(0)
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
