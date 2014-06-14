@@ -38,8 +38,7 @@ var (
 )
 
 func init() {
-	var err error
-	goneDir, err = goutil.SrcDir("github.com/dim13/gone")
+	goneDir, err := goutil.SrcDir("github.com/dim13/gone")
 	if err != nil {
 		log.Fatal("init: ", err)
 	}
