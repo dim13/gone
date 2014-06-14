@@ -30,7 +30,7 @@ const (
 
 var (
 	goneDir string
-	tracks  = make(Tracker)
+	tracks  Tracker
 	tmpl    *template.Template
 	zzz     bool
 	m       sync.Mutex
@@ -252,11 +252,12 @@ func (t Tracker) reset() {
 	m.Unlock()
 }
 
-func (t Tracker) load(fname string) {
+func load(fname string) Tracker {
+	t := make(Tracker)
 	dump, err := os.Open(fname)
 	if err != nil {
 		log.Println(err)
-		return
+		return t
 	}
 	defer dump.Close()
 	dec := gob.NewDecoder(dump)
@@ -266,6 +267,7 @@ func (t Tracker) load(fname string) {
 	if err != nil {
 		log.Println(err)
 	}
+	return t
 }
 
 func (t Tracker) store(fname string) {
@@ -395,7 +397,7 @@ func main() {
 	logger = log.New(logfile, "", log.LstdFlags)
 
 	dumpPath := filepath.Join(goneDir, dump)
-	tracks.load(dumpPath)
+	tracks = load(dumpPath)
 
 	go tracks.collect()
 	go func() {
