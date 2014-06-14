@@ -57,24 +57,25 @@ func (w Window) String() string {
 	return fmt.Sprintf("%s %s", w.Class, w.Name)
 }
 
-func (t Tracks) Update(x Xorg) (current *Track) {
-	if win, ok := x.window(); ok {
-		m.Lock()
-		if _, ok := t[win]; !ok {
-			t[win] = new(Track)
-		}
-		t[win].Seen = time.Now()
-		current = t[win]
-		m.Unlock()
+func (t Tracks) Update(w Window) (current *Track) {
+	m.Lock()
+	if _, ok := t[w]; !ok {
+		t[w] = new(Track)
 	}
+	t[w].Seen = time.Now()
+	current = t[w]
+	m.Unlock()
 	return
 }
 
 func (t Tracks) Collect() {
+	var current *Track
 	x := Connect()
 	defer x.Close()
 
-	current := t.Update(x)
+	if win, ok := x.window(); ok {
+		current = t.Update(win)
+	}
 	for {
 		ev, everr := x.WaitForEvent()
 		if everr != nil {
@@ -88,7 +89,9 @@ func (t Tracks) Collect() {
 				current.Spent += time.Since(current.Seen)
 				m.Unlock()
 			}
-			current = t.Update(x)
+			if win, ok := x.window(); ok {
+				current = t.Update(win)
+			}
 		case screensaver.NotifyEvent:
 			switch event.State {
 			case screensaver.StateOn:
