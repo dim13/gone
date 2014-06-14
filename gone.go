@@ -11,7 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"sort"
 	"sync"
 	"time"
@@ -43,7 +43,7 @@ func init() {
 	if err != nil {
 		log.Fatal("init: ", err)
 	}
-	tmpl = template.Must(template.ParseFiles(path.Join(goneDir, "index.html")))
+	tmpl = template.Must(template.ParseFiles(filepath.Join(goneDir, "index.html")))
 }
 
 type Tracker map[Window]*Track
@@ -386,14 +386,14 @@ func resetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	logfile, err := os.OpenFile(path.Join(goneDir, logf), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	logfile, err := os.OpenFile(filepath.Join(goneDir, logf), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer logfile.Close()
 	logger = log.New(logfile, "", log.LstdFlags)
 
-	dumpPath := path.Join(goneDir, dump)
+	dumpPath := filepath.Join(goneDir, dump)
 	tracks.load(dumpPath)
 
 	go tracks.collect()
