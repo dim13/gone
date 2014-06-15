@@ -40,7 +40,7 @@ type Tracker interface {
 	Wakeup()
 }
 
-type Tracks map[Window]*Track
+type Tracks map[Window]Track
 
 type Track struct {
 	Seen  time.Time
@@ -66,6 +66,7 @@ func (t Tracks) Snooze(idle time.Duration) {
 		if c, ok := t[current]; ok {
 			if idle > c.Spent {
 				c.Spent -= idle
+				t[current] = c
 			}
 		}
 		zzz = true
@@ -83,14 +84,18 @@ func (t Tracks) Update(w Window) {
 	if zzz == false {
 		if c, ok := t[current]; ok {
 			c.Spent += time.Since(c.Seen)
+			t[current] = c
 		}
 	}
 
 	if _, ok := t[w]; !ok {
-		t[w] = new(Track)
+		t[w] = Track{}
 	}
 
-	t[w].Seen = time.Now()
+	s := t[w]
+	s.Seen = time.Now()
+	t[w] = s
+
 	current = w
 }
 
