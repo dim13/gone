@@ -40,7 +40,7 @@ type Tracker interface {
 	Wakeup()
 }
 
-type Tracks map[Window]Track
+type Tracks map[Window]*Track
 
 type Track struct {
 	Seen  time.Time
@@ -87,12 +87,10 @@ func (t Tracks) Update(w Window) {
 	}
 
 	if _, ok := t[w]; !ok {
-		t[w] = Track{}
+		t[w] = new(Track)
 	}
 
-	next := t[w]
-	next.Seen = time.Now()
-	t[w] = next
+	t[w].Seen = time.Now()
 	current = w
 }
 
