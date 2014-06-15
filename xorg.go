@@ -134,21 +134,22 @@ func Connect() Xorg {
 	x.netNameAtom = x.atom("_NET_WM_NAME")
 	x.nameAtom = x.atom("WM_NAME")
 	x.classAtom = x.atom("WM_CLASS")
-	x.event = make(chan xgb.Event, 1)
 
 	x.spy(x.root)
 
 	return x
 }
 
-func (x Xorg) waitForEvent() {
-	for {
+func (x Xorg) waitForEvent() <-chan xgb.Event {
+	event := make(chan xgb.Event, 1)
+	go func() {
 		ev, err := x.conn.WaitForEvent()
 		if err != nil {
 			log.Println("wait for event:", err)
 		}
-		x.event <- ev
-	}
+		event <- ev
+	}()
+	return event
 }
 
 func (x Xorg) queryIdle() time.Duration {
@@ -166,11 +167,9 @@ func (x Xorg) Collect(t Tracker) {
 		t.Update(win)
 	}
 
-	go x.waitForEvent()
-
 	for {
 		select {
-		case event := <-x.event:
+		case event := <-x.waitForEvent():
 			switch e := event.(type) {
 			case xproto.PropertyNotifyEvent:
 				if win, ok := x.window(); ok {
