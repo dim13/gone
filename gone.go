@@ -53,7 +53,8 @@ type Window struct {
 }
 
 func (t Track) String() string {
-	return fmt.Sprintf("%s %s", t.Seen.Format("2006/01/02 15:04:05"), t.Spent)
+	return fmt.Sprintf("%s %s",
+		t.Seen.Format("2006/01/02 15:04:05"), t.Spent)
 }
 
 func (w Window) String() string {
@@ -154,7 +155,8 @@ func main() {
 	X := Connect()
 	defer X.Close()
 
-	logfile, err := os.OpenFile(logFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	logfile, err := os.OpenFile(logFileName,
+		os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
