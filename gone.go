@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 
 	"github.com/mewkiz/pkg/goutil"
@@ -20,8 +19,8 @@ var (
 	indexFileName string
 	tracks        Tracks
 	zzz           bool
-	m             sync.Mutex
 	logger        *log.Logger
+	current       Window
 )
 
 func init() {
@@ -36,10 +35,12 @@ func init() {
 }
 
 type Tracker interface {
-	Update(Window) *Track
+	Update(Window)
+	Snooze(time.Duration)
+	Wakeup()
 }
 
-type Tracks map[Window]*Track
+type Tracks map[Window]Track
 
 type Track struct {
 	Seen  time.Time
@@ -59,26 +60,49 @@ func (w Window) String() string {
 	return fmt.Sprintf("%s %s", w.Class, w.Name)
 }
 
-func (t Tracks) Update(w Window) (current *Track) {
-	m.Lock()
-	if _, ok := t[w]; !ok {
-		t[w] = new(Track)
+func (t Tracks) Snooze(idle time.Duration) {
+	if zzz == false {
+		log.Println("away from keyboard, idle for", idle)
+		if c, ok := t[current]; ok {
+			if idle > c.Spent {
+				c.Spent -= idle
+			}
+		}
+		zzz = true
 	}
-	t[w].Seen = time.Now()
-	current = t[w]
-	m.Unlock()
-	return
+}
+
+func (t Tracks) Wakeup() {
+	if zzz == true {
+		log.Println("back to keyboard")
+		zzz = false
+	}
+}
+
+func (t Tracks) Update(w Window) {
+	if zzz == false {
+		if c, ok := t[current]; ok {
+			c.Spent += time.Since(c.Seen)
+		}
+	}
+
+	if _, ok := t[w]; !ok {
+		t[w] = Track{}
+	}
+
+	next := t[w]
+	next.Seen = time.Now()
+	t[w] = next
+	current = w
 }
 
 func (t Tracks) Remove(d time.Duration) {
-	m.Lock()
 	for k, v := range t {
 		if time.Since(v.Seen) > d {
 			logger.Println(v, k)
 			delete(t, k)
 		}
 	}
-	m.Unlock()
 }
 
 func Load(fname string) Tracks {
@@ -90,9 +114,7 @@ func Load(fname string) Tracks {
 	}
 	defer dump.Close()
 	dec := gob.NewDecoder(dump)
-	m.Lock()
 	err = dec.Decode(&t)
-	m.Unlock()
 	if err != nil {
 		log.Println(err)
 	}
@@ -108,9 +130,7 @@ func (t Tracks) Store(fname string) {
 	}
 	defer dump.Close()
 	enc := gob.NewEncoder(dump)
-	m.Lock()
 	err = enc.Encode(t)
-	m.Unlock()
 	if err != nil {
 		log.Println(err)
 		os.Remove(tmp)

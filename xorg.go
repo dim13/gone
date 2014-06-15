@@ -132,7 +132,7 @@ func Connect() Xorg {
 	x.netNameAtom = x.atom("_NET_WM_NAME")
 	x.nameAtom = x.atom("WM_NAME")
 	x.classAtom = x.atom("WM_CLASS")
-	x.event = make(chan xgb.Event, 1)
+	x.event = make(chan xgb.Event)
 
 	x.spy(x.root)
 
@@ -160,12 +160,9 @@ func (x Xorg) QueryIdle() time.Duration {
 }
 
 func (x Xorg) Collect(t Tracker) {
-	var current *Track
-
 	if win, ok := x.window(); ok {
-		current = t.Update(win)
+		t.Update(win)
 	}
-
 	for {
 		go x.WaitForEvent()
 
@@ -173,32 +170,23 @@ func (x Xorg) Collect(t Tracker) {
 		case event := <-x.event:
 			switch e := event.(type) {
 			case xproto.PropertyNotifyEvent:
-				if current != nil {
-					m.Lock()
-					current.Spent += time.Since(current.Seen)
-					m.Unlock()
-				}
+				t.Wakeup()
 				if win, ok := x.window(); ok {
-					current = t.Update(win)
-					zzz = false
+					t.Update(win)
 				}
 			case screensaver.NotifyEvent:
 				switch e.State {
 				case screensaver.StateOn:
-					log.Println("away from keyboard")
-					current = nil
-					zzz = true
+					idle := x.QueryIdle()
+					t.Snooze(idle)
 				default:
-					log.Println("back to keyboard")
-					zzz = false
+					t.Wakeup()
 				}
 			}
 		case <-time.After(time.Minute):
 			idle := x.QueryIdle()
-			if zzz == false && idle > 5*time.Minute {
-				log.Println("snoozing")
-				current = nil
-				zzz = true
+			if idle > 5*time.Minute {
+				t.Snooze(idle)
 			}
 		}
 	}

@@ -66,7 +66,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	classtotal := make(map[string]time.Duration)
 
-	m.Lock()
 	for k, v := range tracks {
 		classtotal[k.Class] += v.Spent
 		idx.Total += Duration(v.Spent)
@@ -78,7 +77,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 			Name:  k.Name,
 			Spent: Duration(v.Spent)})
 	}
-	m.Unlock()
 	for k, v := range classtotal {
 		idx.Classes = append(idx.Classes, Record{Class: k, Spent: Duration(v)})
 	}
@@ -96,7 +94,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 func dumpHandler(w http.ResponseWriter, r *http.Request) {
 	var rec Records
 
-	m.Lock()
 	for k, v := range tracks {
 		rec = append(rec, Record{
 			Class: k.Class,
@@ -104,7 +101,6 @@ func dumpHandler(w http.ResponseWriter, r *http.Request) {
 			Spent: Duration(v.Spent),
 			Seen:  v.Seen})
 	}
-	m.Unlock()
 
 	data, err := json.MarshalIndent(rec, "", "\t")
 	if err != nil {
