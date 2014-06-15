@@ -134,7 +134,7 @@ func Connect() Xorg {
 	x.netNameAtom = x.atom("_NET_WM_NAME")
 	x.nameAtom = x.atom("WM_NAME")
 	x.classAtom = x.atom("WM_CLASS")
-	x.event = make(chan xgb.Event)
+	x.event = make(chan xgb.Event, 1)
 
 	x.spy(x.root)
 
