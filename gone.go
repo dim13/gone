@@ -77,6 +77,10 @@ func (t Tracks) Snooze(idle time.Duration) {
 func (t Tracks) Wakeup() {
 	if zzz == true {
 		log.Println("back to keyboard")
+		if c, ok := t[current]; ok {
+			c.Seen = time.Now()
+			t[current] = c
+		}
 		zzz = false
 	}
 }
