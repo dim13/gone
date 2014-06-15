@@ -4,7 +4,8 @@ Gone Time Tracker
 Where has my time gone? X11 automatic work activity tracker in pure Go.
 
 _Disclaimer_: may contain bugs or be fubar. :)
-It's work in progress, be patient, update often, file bugs, send pull-requests.
+It's work in progress. Be patient, update often, file bugs, send pull-requests.
+After all, I'm just a hobbyist gopher.
 
 Synopsis
 --------
