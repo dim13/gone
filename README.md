@@ -1,11 +1,6 @@
 Gone Time Tracker
 =================
 
-Where has my time gone?
-
-Name
-----
-
 Where has my time gone? X11 automatic work activity tracker in pure Go.
 
 Synopsis
