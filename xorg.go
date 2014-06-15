@@ -142,13 +142,13 @@ func Connect() Xorg {
 }
 
 func (x Xorg) waitForEvent() {
-	ev, err := x.conn.WaitForEvent()
-	if err != nil {
-		log.Println("wait for event:", err)
-		x.event <- nil
-		return
+	for {
+		ev, err := x.conn.WaitForEvent()
+		if err != nil {
+			log.Println("wait for event:", err)
+		}
+		x.event <- ev
 	}
-	x.event <- ev
 }
 
 func (x Xorg) queryIdle() time.Duration {
@@ -165,9 +165,10 @@ func (x Xorg) Collect(t Tracker) {
 	if win, ok := x.window(); ok {
 		t.Update(win)
 	}
-	for {
-		go x.waitForEvent()
 
+	go x.waitForEvent()
+
+	for {
 		select {
 		case event := <-x.event:
 			switch e := event.(type) {
