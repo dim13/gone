@@ -78,7 +78,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 			Spent: Duration(v.Spent)})
 	}
 	for k, v := range classtotal {
-		idx.Classes = append(idx.Classes, Record{Class: k, Spent: Duration(v)})
+		idx.Classes = append(idx.Classes, Record{
+			Class: k,
+			Spent: Duration(v)})
 	}
 	sort.Sort(sort.Reverse(idx.Classes))
 	sort.Sort(sort.Reverse(idx.Records))
