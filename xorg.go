@@ -170,8 +170,8 @@ func (x Xorg) Collect(t Tracker) {
 		case event := <-x.event:
 			switch e := event.(type) {
 			case xproto.PropertyNotifyEvent:
-				t.Wakeup()
 				if win, ok := x.window(); ok {
+					t.Wakeup()
 					t.Update(win)
 				}
 			case screensaver.NotifyEvent:
