@@ -1,6 +1,8 @@
 Gone Time Tracker
 =================
 
+Where has my time gone?
+
 Name
 ----
 
@@ -10,9 +12,11 @@ Synopsis
 --------
 
 _Gone_ performs automatic time accounting on EWMH capable Window Managers by
-looking at _NET_ACTIVE_WINDOW and storing spent time on a particular window.
+looking at _NET_ACTIVE_WINDOW and storing spent time on a particular application.
 
 _Gone_ is aware of ScreenSaver and suspends accounting if ScreenSaver triggers.
+As fallback (see caveats) it also observes user activity and stops after 5 minutes
+of incativity. The inactive time is not counted.
 
 Results are presented at http://localhost:8001/
 
