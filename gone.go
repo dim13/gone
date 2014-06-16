@@ -63,7 +63,7 @@ func (w Window) String() string {
 }
 
 func (t Tracks) Snooze(idle time.Duration) {
-	if zzz == false {
+	if !zzz {
 		log.Println("away from keyboard, idle for", idle)
 		if c, ok := t[current]; ok {
 			c.Idle += idle
@@ -74,7 +74,7 @@ func (t Tracks) Snooze(idle time.Duration) {
 }
 
 func (t Tracks) Wakeup() {
-	if zzz == true {
+	if zzz {
 		log.Println("back to keyboard")
 		if c, ok := t[current]; ok {
 			c.Seen = time.Now()
@@ -85,7 +85,7 @@ func (t Tracks) Wakeup() {
 }
 
 func (t Tracks) Update(w Window) {
-	if zzz == false {
+	if !zzz {
 		if c, ok := t[current]; ok {
 			c.Spent += time.Since(c.Seen)
 			t[current] = c
