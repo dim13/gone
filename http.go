@@ -29,11 +29,13 @@ type Records []Record
 type Duration time.Duration
 
 type Record struct {
-	Class string
-	Name  string
-	Spent Duration
-	Seen  time.Time
-	Odd   bool `json:"-"`
+	Class   string
+	Name    string
+	Spent   Duration
+	Idle    Duration
+	Seen    time.Time
+	Odd     bool `json:"-"`
+	Percent float64
 }
 
 func (r Records) Len() int           { return len(r) }
@@ -54,10 +56,6 @@ func (d Duration) String() string {
 	return ret + fmt.Sprintf("%ds", s)
 }
 
-func (d Duration) Seconds() int {
-	return int(time.Duration(d).Seconds())
-}
-
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	var idx Index
 	idx.Title = "Gone Time Tracker"
@@ -75,12 +73,14 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		idx.Records = append(idx.Records, Record{
 			Class: k.Class,
 			Name:  k.Name,
-			Spent: Duration(v.Spent)})
+			Spent: Duration(v.Spent),
+			Idle:  Duration(v.Idle)})
 	}
 	for k, v := range classtotal {
 		idx.Classes = append(idx.Classes, Record{
-			Class: k,
-			Spent: Duration(v)})
+			Class:   k,
+			Spent:   Duration(v),
+			Percent: 100.0 * float64(v) / float64(idx.Total)})
 	}
 	sort.Sort(sort.Reverse(idx.Classes))
 	sort.Sort(sort.Reverse(idx.Records))
