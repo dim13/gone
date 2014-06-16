@@ -45,6 +45,7 @@ type Tracks map[Window]Track
 type Track struct {
 	Seen  time.Time
 	Spent time.Duration
+	Idle  time.Duration
 }
 
 type Window struct {
@@ -65,10 +66,8 @@ func (t Tracks) Snooze(idle time.Duration) {
 	if zzz == false {
 		log.Println("away from keyboard, idle for", idle)
 		if c, ok := t[current]; ok {
-			if idle > c.Spent && c.Spent > 0 {
-				c.Spent -= idle
-				t[current] = c
-			}
+			c.Idle += idle
+			t[current] = c
 		}
 		zzz = true
 	}
