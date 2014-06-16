@@ -134,6 +134,7 @@ func Connect() Xorg {
 	x.netNameAtom = x.atom("_NET_WM_NAME")
 	x.nameAtom = x.atom("WM_NAME")
 	x.classAtom = x.atom("WM_CLASS")
+	x.event = make(chan xgb.Event, 1)
 
 	x.spy(x.root)
 
@@ -141,15 +142,14 @@ func Connect() Xorg {
 }
 
 func (x Xorg) waitForEvent() <-chan xgb.Event {
-	event := make(chan xgb.Event, 1)
 	go func() {
 		ev, err := x.conn.WaitForEvent()
 		if err != nil {
 			log.Println("wait for event:", err)
 		}
-		event <- ev
+		x.event <- ev
 	}()
-	return event
+	return x.event
 }
 
 func (x Xorg) queryIdle() time.Duration {
