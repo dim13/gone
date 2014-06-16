@@ -3,6 +3,7 @@ package main
 
 import (
 	"encoding/gob"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -21,6 +22,10 @@ var (
 	zzz           bool
 	logger        *log.Logger
 	current       Window
+	display       string
+	listen        string
+	timeout       int
+	expire        int
 )
 
 func init() {
@@ -32,6 +37,12 @@ func init() {
 	dumpFileName = filepath.Join(goneDir, "gone.gob")
 	logFileName = filepath.Join(goneDir, "gone.log")
 	indexFileName = filepath.Join(goneDir, "index.html")
+
+	flag.StringVar(&display, "display", ":0", "X11 display")
+	flag.StringVar(&listen, "listen", "127.0.0.1:8001", "web reporter")
+	flag.IntVar(&timeout, "timeout", 5, "idle time in minutes")
+	flag.IntVar(&expire, "expire", 8, "expire time in hours")
+	flag.Parse()
 }
 
 type Tracks map[Window]Track
@@ -137,7 +148,7 @@ func (t Tracks) Store(fname string) {
 
 func (t Tracks) Cleanup() {
 	for {
-		tracks.Remove(8 * time.Hour)
+		tracks.Remove(time.Duration(expire) * time.Hour)
 		tracks.Store(dumpFileName)
 		time.Sleep(time.Minute)
 	}
@@ -157,8 +168,8 @@ func main() {
 
 	tracks = Load(dumpFileName)
 
-	go X.Collect(tracks)
+	go X.Collect(tracks, time.Duration(timeout)*time.Minute)
 	go tracks.Cleanup()
 
-	webReporter("127.0.0.1:8001")
+	webReporter(listen)
 }

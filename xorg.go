@@ -173,7 +173,7 @@ func (x Xorg) queryIdle() time.Duration {
 	return time.Duration(info.MsSinceUserInput) * time.Millisecond
 }
 
-func (x Xorg) Collect(t Tracker) {
+func (x Xorg) Collect(t Tracker, timeout time.Duration) {
 	if win, ok := x.window(); ok {
 		t.Update(win)
 	}
@@ -198,7 +198,7 @@ func (x Xorg) Collect(t Tracker) {
 			}
 		case <-time.After(time.Minute):
 			idle := x.queryIdle()
-			if idle > 5*time.Minute {
+			if idle > timeout {
 				t.Snooze(idle)
 			}
 		}
