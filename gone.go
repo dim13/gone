@@ -40,7 +40,7 @@ func init() {
 
 	flag.StringVar(&display, "display", ":0", "X11 display")
 	flag.StringVar(&listen, "listen", "127.0.0.1:8001", "web reporter")
-	flag.IntVar(&timeout, "timeout", 5, "idle time in minutes")
+	flag.IntVar(&timeout, "timeout", 20, "idle time in seconds")
 	flag.IntVar(&expire, "expire", 8, "expire time in hours")
 	flag.Parse()
 }
@@ -64,7 +64,7 @@ func (w Window) String() string {
 
 func (t Tracks) Snooze(idle time.Duration) {
 	if !zzz {
-		log.Println("away from keyboard, idle for", idle)
+		logger.Println("away from keyboard, idle for", idle)
 		if c, ok := t[current]; ok {
 			c.Idle += idle
 			t[current] = c
@@ -75,7 +75,7 @@ func (t Tracks) Snooze(idle time.Duration) {
 
 func (t Tracks) Wakeup() {
 	if zzz {
-		log.Println("back to keyboard")
+		logger.Println("back to keyboard")
 		if c, ok := t[current]; ok {
 			c.Seen = time.Now()
 			t[current] = c
@@ -168,7 +168,7 @@ func main() {
 
 	tracks = Load(dumpFileName)
 
-	go X.Collect(tracks, time.Duration(timeout)*time.Minute)
+	go X.Collect(tracks, time.Duration(timeout)*time.Second)
 	go tracks.Cleanup()
 
 	webReporter(listen)

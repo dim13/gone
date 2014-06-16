@@ -190,17 +190,13 @@ func (x Xorg) Collect(t Tracker, timeout time.Duration) {
 			case screensaver.NotifyEvent:
 				switch e.State {
 				case screensaver.StateOn:
-					idle := x.queryIdle()
-					t.Snooze(idle)
+					t.Snooze(x.queryIdle())
 				default:
 					t.Wakeup()
 				}
 			}
-		case <-time.After(time.Minute):
-			idle := x.queryIdle()
-			if idle > timeout {
-				t.Snooze(idle)
-			}
+		case <-time.After(timeout):
+			t.Snooze(x.queryIdle())
 		}
 	}
 }
