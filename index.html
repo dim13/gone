@@ -34,6 +34,10 @@
 			}
 			.right {
 				text-align: right;
+				width: 12ex;
+			}
+			td {
+				padding: 0 1ex;
 			}
 		</style>
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -45,9 +49,7 @@
 				data.addColumn('string', 'Class');
 				data.addColumn('number', 'Time');
 				data.addRows([
-					{{range .Classes}}
-					['{{.Class}}', {{.Percent}}],
-					{{end}}
+				{{range .Classes}}['{{.Class}}', {{.Percent}}],{{end}}
 				]);
 				var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
 				var options = {
@@ -66,13 +68,11 @@
 			<tr>
 				<td><a href="/{{.Class}}">{{.Class}}</a></td>
 				<td class="right">{{.Spent}}</td>
-				<td class="right">({{printf "%4.1f" .Percent}}%)</td>
 			</tr>
 			{{end}}
 			<tr>
 				<td><a href="/">&Sigma;</a></td>
 				<td class="total right">{{.Total}}</td>
-				<td>&nbsp;</td>
 			</tr>
 			</table>
 			</section>
@@ -93,7 +93,7 @@
 		<tr>
 			<th>Class</th>
 			<th>Name</th>
-			<th>Duration</th>
+			<th>Spent</th>
 			<th>Idle</th>
 		</tr>
 		{{range .Records}}
