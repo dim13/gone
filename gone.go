@@ -66,7 +66,9 @@ func (t Tracks) Snooze(idle time.Duration) {
 	if !zzz {
 		logger.Println("away from keyboard, idle for", idle)
 		if c, ok := t[current]; ok {
-			c.Idle = idle
+			if c.Idle < idle {
+				c.Idle = idle
+			}
 			t[current] = c
 		}
 		zzz = true
