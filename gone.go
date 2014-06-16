@@ -34,23 +34,12 @@ func init() {
 	indexFileName = filepath.Join(goneDir, "index.html")
 }
 
-type Tracker interface {
-	Update(Window)
-	Snooze(time.Duration)
-	Wakeup()
-}
-
 type Tracks map[Window]Track
 
 type Track struct {
 	Seen  time.Time
 	Spent time.Duration
 	Idle  time.Duration
-}
-
-type Window struct {
-	Class string
-	Name  string
 }
 
 func (t Track) String() string {

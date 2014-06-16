@@ -23,6 +23,17 @@ type Xorg struct {
 	event       chan xgb.Event
 }
 
+type Window struct {
+	Class string
+	Name  string
+}
+
+type Tracker interface {
+	Update(Window)
+	Snooze(time.Duration)
+	Wakeup()
+}
+
 func (x Xorg) atom(aname string) *xproto.InternAtomReply {
 	a, err := xproto.InternAtom(x.conn, true,
 		uint16(len(aname)), aname).Reply()
