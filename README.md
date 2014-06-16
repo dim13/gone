@@ -33,3 +33,8 @@ _xscreensaver_ ignores MIT-SCREEN-SAVER extension.
 Use xidle/xlock instead and/or activate X11 ScreenSaver:
 
     xset s default
+
+Alternatives
+------------
+
+http://arbtt.nomeata.de/ -- automatic, rule-based time tracker
