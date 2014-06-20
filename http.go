@@ -34,7 +34,6 @@ type Record struct {
 	Spent   Duration
 	Idle    Duration
 	Seen    time.Time
-	Odd     bool `json:"-"`
 	Percent float64
 }
 
@@ -84,9 +83,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Sort(sort.Reverse(idx.Classes))
 	sort.Sort(sort.Reverse(idx.Records))
-	for j := range idx.Records {
-		idx.Records[j].Odd = j%2 == 0
-	}
 	err := tmpl.Execute(w, idx)
 	if err != nil {
 		log.Println(err)

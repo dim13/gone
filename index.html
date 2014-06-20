@@ -18,7 +18,7 @@
 				padding: 1em;
 				margin-left: 1em;
 			}
-			.odd {
+			.records:nth-child(odd) {
 				background: #efefef;
 			}
 			.total {
@@ -97,7 +97,7 @@
 			<th>Idle</th>
 		</tr>
 		{{range .Records}}
-		<tr {{if .Odd}}class="odd"{{end}}>
+		<tr class="records">
 			<td><a href="/{{.Class}}">{{.Class}}</a></td>
 			<td>{{.Name}}</td>
 			<td class="right">{{.Spent}}</td>
