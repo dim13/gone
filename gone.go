@@ -107,7 +107,7 @@ func (t Tracks) Update(w Window) {
 
 func (t Tracks) Remove(d time.Duration) {
 	for k, v := range t {
-		if time.Since(v.Seen) > d {
+		if time.Since(v.Seen) > d || v.Idle > d {
 			logger.Println(v, k)
 			delete(t, k)
 		}
