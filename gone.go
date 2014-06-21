@@ -37,6 +37,7 @@ func init() {
 	dumpFileName = filepath.Join(goneDir, "gone.gob")
 	logFileName = filepath.Join(goneDir, "gone.log")
 	indexFileName = filepath.Join(goneDir, "index.html")
+	initTemplate(indexFileName)
 
 	flag.StringVar(&display, "display", ":0", "X11 display")
 	flag.StringVar(&listen, "listen", "127.0.0.1:8001", "web reporter")

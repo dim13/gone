@@ -13,8 +13,8 @@ import (
 
 var tmpl *template.Template
 
-func init() {
-	tmpl = template.Must(template.ParseFiles(indexFileName))
+func initTemplate(fname string) {
+	tmpl = template.Must(template.ParseFiles(fname))
 }
 
 type Index struct {
