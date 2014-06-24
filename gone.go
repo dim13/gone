@@ -41,7 +41,7 @@ func init() {
 
 	flag.StringVar(&display, "display", ":0", "X11 display")
 	flag.StringVar(&listen, "listen", "127.0.0.1:8001", "web reporter")
-	flag.IntVar(&timeout, "timeout", 20, "idle time in seconds")
+	flag.IntVar(&timeout, "timeout", 60, "idle time in seconds")
 	flag.IntVar(&expire, "expire", 8, "expire time in hours")
 	flag.Parse()
 }
