@@ -9,12 +9,11 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/mewkiz/pkg/goutil"
 )
 
 var (
 	goneDir       string
+	dataDir       string
 	dumpFileName  string
 	logFileName   string
 	indexFileName string
@@ -30,12 +29,14 @@ var (
 
 func init() {
 	var err error
-	goneDir, err = goutil.SrcDir("github.com/dim13/gone")
-	if err != nil {
-		log.Fatal("init: ", err)
+	if goneDir, err = getGoneDir(); err != nil {
+		log.Fatal(err)
 	}
-	dumpFileName = filepath.Join(goneDir, "gone.gob")
-	logFileName = filepath.Join(goneDir, "gone.log")
+	if dataDir, err = findWriteableDir(goneDir, "."); err != nil {
+		log.Fatal(err)
+	}
+	dumpFileName = filepath.Join(dataDir, "gone.gob")
+	logFileName = filepath.Join(dataDir, "gone.log")
 	indexFileName = filepath.Join(goneDir, "index.html")
 	initTemplate(indexFileName)
 
