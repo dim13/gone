@@ -36,7 +36,7 @@ func init() {
 	}
 	dumpFileName = filepath.Join(goneDir, "gone.gob")
 	logFileName = filepath.Join(goneDir, "gone.log")
-	indexFileName = filepath.Join(goneDir, "index.html")
+	indexFileName = filepath.Join(goneDir, "root.tmpl")
 	initTemplate(indexFileName)
 
 	flag.StringVar(&display, "display", ":0", "X11 display")
