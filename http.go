@@ -43,17 +43,8 @@ func (r Records) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
 func (r Records) Less(i, j int) bool { return r[i].Spent < r[j].Spent }
 
 func (d Duration) String() string {
-	h := int(time.Duration(d).Hours())
-	m := int(time.Duration(d).Minutes()) % 60
-	s := int(time.Duration(d).Seconds()) % 60
-	var ret string
-	if h > 0 {
-		ret += fmt.Sprintf("%dh", h)
-	}
-	if m > 0 {
-		ret += fmt.Sprintf("%dm", m)
-	}
-	return ret + fmt.Sprintf("%ds", s)
+	dt := time.Duration(d)
+	return fmt.Sprint(dt - dt%time.Second)
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {

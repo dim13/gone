@@ -37,9 +37,9 @@ var (
 
 var (
 	tracks  Tracks
-	zzz     bool
-	logger  *log.Logger
 	current Window
+	logger  *log.Logger
+	zzz     bool
 )
 
 func init() {
