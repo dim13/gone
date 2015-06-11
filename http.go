@@ -11,12 +11,6 @@ import (
 	"time"
 )
 
-var tmpl *template.Template
-
-func initTemplate(fname string) {
-	tmpl = template.Must(template.ParseFiles(fname))
-}
-
 type Index struct {
 	Title   string
 	Records Records
@@ -25,9 +19,6 @@ type Index struct {
 	Zzz     bool
 }
 
-type Records []Record
-type Duration time.Duration
-
 type Record struct {
 	Class   string
 	Name    string
@@ -35,6 +26,16 @@ type Record struct {
 	Idle    Duration
 	Seen    time.Time
 	Percent float64
+}
+
+type Records []Record
+
+type Duration time.Duration
+
+var tmpl *template.Template
+
+func initTemplate(fname string) {
+	tmpl = template.Must(template.ParseFiles(fname))
 }
 
 func (r Records) Len() int           { return len(r) }
