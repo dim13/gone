@@ -34,6 +34,11 @@ type Tracker interface {
 	Wakeup()
 }
 
+var (
+	errNoValue = errors.New("empty value")
+	errNoClass = errors.New("empty class")
+)
+
 func (x Xorg) atom(aname string) *xproto.InternAtomReply {
 	a, err := xproto.InternAtom(x.conn, true,
 		uint16(len(aname)), aname).Reply()
@@ -68,7 +73,7 @@ func (x Xorg) name(w xproto.Window) (string, error) {
 			return "", err
 		}
 		if string(name.Value) == "" {
-			return "", errors.New("empty value")
+			return "", errNoValue
 		}
 	}
 	return string(name.Value), nil
@@ -84,7 +89,7 @@ func (x Xorg) class(w xproto.Window) (string, error) {
 	if l := len(s); l > 0 && len(s[l-1]) != 0 {
 		return string(s[l-1]), nil
 	}
-	return "", errors.New("empty class")
+	return "", errNoClass
 }
 
 func (x Xorg) window() (Window, bool) {
