@@ -24,8 +24,8 @@ var (
 	current       Window
 	display       string
 	listen        string
-	timeout       int
-	expire        int
+	timeout       time.Duration
+	expire        time.Duration
 )
 
 func init() {
@@ -41,8 +41,8 @@ func init() {
 
 	flag.StringVar(&display, "display", ":0", "X11 display")
 	flag.StringVar(&listen, "listen", "127.0.0.1:8001", "web reporter")
-	flag.IntVar(&timeout, "timeout", 60, "idle time in seconds")
-	flag.IntVar(&expire, "expire", 8, "expire time in hours")
+	flag.DurationVar(&timeout, "timeout", time.Minute, "idle time")
+	flag.DurationVar(&expire, "expire", time.Hour*8, "expire time")
 	flag.Parse()
 }
 
@@ -151,7 +151,7 @@ func (t Tracks) Store(fname string) {
 
 func (t Tracks) Cleanup() {
 	for {
-		tracks.Remove(time.Duration(expire) * time.Hour)
+		tracks.Remove(expire)
 		tracks.Store(dumpFileName)
 		time.Sleep(time.Minute)
 	}
@@ -171,7 +171,7 @@ func main() {
 
 	tracks = Load(dumpFileName)
 
-	go X.Collect(tracks, time.Duration(timeout)*time.Second)
+	go X.Collect(tracks, timeout)
 	go tracks.Cleanup()
 
 	webReporter(listen)
