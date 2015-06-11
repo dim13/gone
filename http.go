@@ -34,8 +34,8 @@ type Duration time.Duration
 
 var tmpl *template.Template
 
-func initTemplate(fname string) {
-	tmpl = template.Must(template.ParseFiles(fname))
+func init() {
+	tmpl = template.Must(template.ParseFiles(tmplFileName))
 }
 
 func (r Records) Len() int           { return len(r) }
@@ -59,7 +59,7 @@ func (d Duration) String() string {
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	var idx Index
 	idx.Zzz = zzz
-	idx.Refresh = refresh
+	idx.Refresh = *refresh
 	class := r.URL.Path[1:]
 
 	classtotal := make(map[string]time.Duration)

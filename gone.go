@@ -5,12 +5,11 @@ import (
 	"encoding/gob"
 	"flag"
 	"fmt"
+	"go/build"
 	"log"
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/mewkiz/pkg/goutil"
 )
 
 type Tracks map[Window]Track
@@ -22,39 +21,37 @@ type Track struct {
 }
 
 var (
-	goneDir       string
-	dumpFileName  string
-	logFileName   string
-	indexFileName string
-	tracks        Tracks
-	zzz           bool
-	logger        *log.Logger
-	current       Window
-	display       string
-	listen        string
-	timeout       time.Duration
-	expire        time.Duration
-	refresh       time.Duration
+	goneDir      = pkgpath("github.com/dim13/gone")
+	dumpFileName = filepath.Join(goneDir, "gone.gob")
+	logFileName  = filepath.Join(goneDir, "gone.log")
+	tmplFileName = filepath.Join(goneDir, "root.tmpl")
+)
+
+var (
+	display = flag.String("display", ":0", "X11 display")
+	listen  = flag.String("listen", "127.0.0.1:8001", "web reporter")
+	timeout = flag.Duration("timeout", time.Minute*5, "idle timeout")
+	expire  = flag.Duration("expire", time.Hour*8, "expire timeout")
+	refresh = flag.Duration("refresh", time.Minute, "refresh interval")
+)
+
+var (
+	tracks  Tracks
+	zzz     bool
+	logger  *log.Logger
+	current Window
 )
 
 func init() {
-	var err error
-	goneDir, err = goutil.SrcDir("github.com/dim13/gone")
-	if err != nil {
-		log.Fatal("init: ", err)
-	}
-
-	dumpFileName = filepath.Join(goneDir, "gone.gob")
-	logFileName = filepath.Join(goneDir, "gone.log")
-	indexFileName = filepath.Join(goneDir, "root.tmpl")
-	initTemplate(indexFileName)
-
-	flag.StringVar(&display, "display", ":0", "X11 display")
-	flag.StringVar(&listen, "listen", "127.0.0.1:8001", "web reporter")
-	flag.DurationVar(&timeout, "timeout", time.Minute*5, "idle timeout")
-	flag.DurationVar(&expire, "expire", time.Hour*8, "expire timeout")
-	flag.DurationVar(&refresh, "refresh", time.Minute, "refresh interval")
 	flag.Parse()
+}
+
+func pkgpath(p string) string {
+	pkg, err := build.Import(p, "", build.FindOnly)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return pkg.Dir
 }
 
 func (t Track) String() string {
@@ -154,9 +151,9 @@ func (t Tracks) Store(fname string) {
 
 func (t Tracks) Cleanup() {
 	for {
-		tracks.Remove(expire)
+		tracks.Remove(*expire)
 		tracks.Store(dumpFileName)
-		time.Sleep(time.Minute)
+		time.Sleep(*refresh)
 	}
 }
 
@@ -174,8 +171,8 @@ func main() {
 
 	tracks = Load(dumpFileName)
 
-	go X.Collect(tracks, timeout)
+	go X.Collect(tracks, *timeout)
 	go tracks.Cleanup()
 
-	webReporter(listen)
+	webReporter(*listen)
 }
