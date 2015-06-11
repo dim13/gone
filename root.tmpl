@@ -1,4 +1,5 @@
-{{define "title"}}Gone Time Tracker {{if .Zzz}} Zzz&hellip;{{end}}{{end}}
+{{define "title"}}Gone Time Tracker {{if .Zzz}}{{template "snooze"}}{{end}}{{end}}
+{{define "snooze"}}Zzz&hellip;{{end}}
 {{define "root"}}
 <!DOCTYPE html>
 <html>
@@ -80,6 +81,10 @@
 			<tr>
 				<td><a href="/">&Sigma;</a></td>
 				<td class="total right">{{.Total}}</td>
+			</tr>
+			<tr>
+				<td>{{template "snooze"}}</td>
+				<td class="right">{{.Idle}}</td>
 			</tr>
 			</table>
 			</section>

@@ -15,6 +15,7 @@ type Index struct {
 	Records Records
 	Classes Records
 	Total   Duration
+	Idle    Duration
 	Zzz     bool
 	Refresh time.Duration
 }
@@ -58,6 +59,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	for k, v := range tracks {
 		classtotal[k.Class] += v.Spent
 		idx.Total += Duration(v.Spent)
+		idx.Idle += Duration(v.Idle)
 		if class != "" && class != k.Class {
 			continue
 		}
