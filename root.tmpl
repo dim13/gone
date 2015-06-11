@@ -1,8 +1,12 @@
+{{define "title"}}Gone Time Tracker {{if .Zzz}} Zzz&hellip;{{end}}{{end}}
+{{define "root"}}
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>{{.Title}}</title>
-		<meta http-equiv="refresh" content="60">
+		<title>{{template "title" .}}</title>
+		{{with .Refresh}}
+		<meta http-equiv="refresh" content="{{.Seconds}}">
+		{{end}}
 		<link href='http://fonts.googleapis.com/css?family=Abel&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
 		<style>
 			body {
@@ -63,7 +67,7 @@
 		</script>
 	</head>
 	<body>
-		<h1>{{.Title}}{{if .Zzz}} Zzz&hellip;{{end}}</h1>
+		<h1>{{template "title" .}}</h1>
 		<aside>
 			<section id="box">
 			<table>
@@ -110,4 +114,4 @@
 		</table>
 	</body>
 </html>
-
+{{end}}

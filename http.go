@@ -12,11 +12,11 @@ import (
 )
 
 type Index struct {
-	Title   string
 	Records Records
 	Classes Records
 	Total   Duration
 	Zzz     bool
+	Refresh time.Duration
 }
 
 type Record struct {
@@ -58,8 +58,8 @@ func (d Duration) String() string {
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	var idx Index
-	idx.Title = "Gone Time Tracker"
 	idx.Zzz = zzz
+	idx.Refresh = refresh
 	class := r.URL.Path[1:]
 
 	classtotal := make(map[string]time.Duration)
@@ -84,7 +84,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Sort(sort.Reverse(idx.Classes))
 	sort.Sort(sort.Reverse(idx.Records))
-	err := tmpl.Execute(w, idx)
+	err := tmpl.ExecuteTemplate(w, "root", idx)
 	if err != nil {
 		log.Println(err)
 	}

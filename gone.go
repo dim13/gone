@@ -26,6 +26,7 @@ var (
 	listen        string
 	timeout       time.Duration
 	expire        time.Duration
+	refresh       time.Duration
 )
 
 func init() {
@@ -43,6 +44,7 @@ func init() {
 	flag.StringVar(&listen, "listen", "127.0.0.1:8001", "web reporter")
 	flag.DurationVar(&timeout, "timeout", time.Minute, "idle time")
 	flag.DurationVar(&expire, "expire", time.Hour*8, "expire time")
+	flag.DurationVar(&refresh, "refresh", time.Minute, "refresh interval")
 	flag.Parse()
 }
 
