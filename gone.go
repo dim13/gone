@@ -13,6 +13,14 @@ import (
 	"github.com/mewkiz/pkg/goutil"
 )
 
+type Tracks map[Window]Track
+
+type Track struct {
+	Seen  time.Time
+	Spent time.Duration
+	Idle  time.Duration
+}
+
 var (
 	goneDir       string
 	dumpFileName  string
@@ -35,6 +43,7 @@ func init() {
 	if err != nil {
 		log.Fatal("init: ", err)
 	}
+
 	dumpFileName = filepath.Join(goneDir, "gone.gob")
 	logFileName = filepath.Join(goneDir, "gone.log")
 	indexFileName = filepath.Join(goneDir, "root.tmpl")
@@ -46,14 +55,6 @@ func init() {
 	flag.DurationVar(&expire, "expire", time.Hour*8, "expire timeout")
 	flag.DurationVar(&refresh, "refresh", time.Minute, "refresh interval")
 	flag.Parse()
-}
-
-type Tracks map[Window]Track
-
-type Track struct {
-	Seen  time.Time
-	Spent time.Duration
-	Idle  time.Duration
 }
 
 func (t Track) String() string {
