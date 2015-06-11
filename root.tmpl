@@ -106,14 +106,12 @@
 			<th>Class</th>
 			<th>Name</th>
 			<th>Spent</th>
-			<th>Idle</th>
 		</tr>
 		{{range .Records}}
 		<tr class="records">
 			<td><a href="/{{.Class}}">{{.Class}}</a></td>
 			<td>{{.Name}}</td>
 			<td class="right">{{.Spent}}</td>
-			<td class="right">{{.Idle}}</td>
 		</tr>
 		{{end}}
 		</table>

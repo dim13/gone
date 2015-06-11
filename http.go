@@ -13,7 +13,7 @@ import (
 
 type Index struct {
 	Records Records
-	Classes Records
+	Classes Classes
 	Total   Duration
 	Idle    Duration
 	Zzz     bool
@@ -21,15 +21,22 @@ type Index struct {
 }
 
 type Record struct {
+	Class string
+	Name  string
+	Spent Duration
+	Idle  Duration
+	Seen  time.Time
+}
+
+type Class struct {
 	Class   string
-	Name    string
 	Spent   Duration
-	Idle    Duration
-	Seen    time.Time
 	Percent float64
 }
 
 type Records []Record
+
+type Classes []Class
 
 type Duration time.Duration
 
@@ -42,6 +49,10 @@ func init() {
 func (r Records) Len() int           { return len(r) }
 func (r Records) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
 func (r Records) Less(i, j int) bool { return r[i].Spent < r[j].Spent }
+
+func (c Classes) Len() int           { return len(c) }
+func (c Classes) Swap(i, j int)      { c[i], c[j] = c[j], c[i] }
+func (c Classes) Less(i, j int) bool { return c[i].Spent < c[j].Spent }
 
 func (d Duration) String() string {
 	dt := time.Duration(d)
@@ -70,7 +81,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 			Idle:  Duration(v.Idle)})
 	}
 	for k, v := range classtotal {
-		idx.Classes = append(idx.Classes, Record{
+		idx.Classes = append(idx.Classes, Class{
 			Class:   k,
 			Spent:   Duration(v),
 			Percent: 100.0 * float64(v) / float64(idx.Total)})
