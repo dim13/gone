@@ -149,8 +149,8 @@ func (t Tracks) Store(fname string) {
 
 func (t Tracks) Cleanup() {
 	for {
-		tracks.Remove(*expire)
-		tracks.Store(dumpFileName)
+		t.Remove(*expire)
+		t.Store(dumpFileName)
 		time.Sleep(*refresh)
 	}
 }
@@ -168,6 +168,7 @@ func main() {
 	logger = log.New(logfile, "", log.LstdFlags)
 
 	tracks = Load(dumpFileName)
+	defer tracks.Store(dumpFileName)
 
 	go X.Collect(tracks, *timeout)
 	go tracks.Cleanup()
