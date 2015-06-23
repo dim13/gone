@@ -24,7 +24,7 @@ var (
 	goneDir      = pkgpath("github.com/dim13/gone")
 	dumpFileName = filepath.Join(goneDir, "gone.gob")
 	logFileName  = filepath.Join(goneDir, "gone.log")
-	tmplFileName = filepath.Join(goneDir, "root.tmpl")
+	tmplFileName = filepath.Join(goneDir, "gone.tmpl")
 )
 
 var (
