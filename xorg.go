@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"errors"
 	"log"
-	"os"
 	"time"
 
 	"github.com/BurntSushi/xgb"
@@ -122,14 +121,10 @@ func (x Xorg) Close() {
 	x.conn.Close()
 }
 
-func Connect() Xorg {
+func Connect(display string) Xorg {
 	var x Xorg
 	var err error
 
-	display := os.Getenv("DISPLAY")
-	if display == "" {
-		display = ":0"
-	}
 	x.conn, err = xgb.NewConnDisplay(display)
 	if err != nil {
 		log.Fatal("xgb: ", err)

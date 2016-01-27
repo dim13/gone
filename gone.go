@@ -28,7 +28,7 @@ var (
 )
 
 var (
-	display = flag.String("display", ":0", "X11 display")
+	display = flag.String("display", os.Getenv("DISPLAY"), "X11 display")
 	listen  = flag.String("listen", "127.0.0.1:8001", "web reporter")
 	timeout = flag.Duration("timeout", time.Minute*5, "idle timeout")
 	expire  = flag.Duration("expire", time.Hour*8, "expire timeout")
@@ -41,10 +41,6 @@ var (
 	logger  *log.Logger
 	zzz     bool
 )
-
-func init() {
-	flag.Parse()
-}
 
 func pkgpath(p string) string {
 	pkg, err := build.Import(p, "", build.FindOnly)
@@ -156,7 +152,9 @@ func (t Tracks) Cleanup() {
 }
 
 func main() {
-	X := Connect()
+	flag.Parse()
+
+	X := Connect(*display)
 	defer X.Close()
 
 	logfile, err := os.OpenFile(logFileName,
