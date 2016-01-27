@@ -1,0 +1,139 @@
+{{define "title"}}Gone Time Tracker {{if .Zzz}}{{template "snooze"}}{{end}}{{end}}
+
+{{define "snooze"}}Zzz&hellip;{{end}}
+
+{{define "refresh"}}
+	{{with .}}<meta http-equiv="refresh" content="{{.Seconds}}">{{end}}
+{{end}}
+
+{{define "style"}}
+	<link href='http://fonts.googleapis.com/css?family=Roboto:300&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+	<style>
+		body {
+			font-family: 'Roboto', sans-serif;
+			margin: 2% 6%;
+		}
+		aside {
+			float: right;
+		}
+		#box {
+			border: thin solid #428a42;
+			background: #efffef;
+			padding: 1em;
+			margin-left: 1em;
+		}
+		.records:nth-child(even) {
+			background: #efefef;
+		}
+		.records td:nth-child(2) {
+			width: 100%;
+		}
+		.total {
+			border-top: thin solid black;
+		}
+		a {
+			text-decoration: none;
+			color: #6c71ce;
+		}
+		ul {
+			list-style-type: none;
+		}
+		.right {
+			text-align: right;
+			width: 12ex;
+		}
+		td {
+			padding: 0 1ex;
+		}
+	</style>
+{{end}}
+
+{{define "chart"}}
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<script type="text/javascript">
+		google.load('visualization', '1.0', {'packages':['corechart']});
+		google.setOnLoadCallback(drawChart);
+		function drawChart() {
+			var data = new google.visualization.DataTable();
+			data.addColumn('string', 'Class');
+			data.addColumn('number', 'Time');
+			data.addRows([
+			{{range .Classes}}['{{.Class}}', {{.Percent}}],{{end}}
+			]);
+			var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+			var options = {
+				legend: 'none'
+			};
+			chart.draw(data, options);
+		}
+	</script>
+{{end}}
+
+{{define "aside"}}
+	<aside>
+		<section id="box">
+		<table>
+			{{range .Classes}}
+			<tr>
+				<td><a href="/{{.Class}}">{{.Class}}</a></td>
+				<td class="right">{{.Spent}}</td>
+			</tr>
+			{{end}}
+			<tr>
+				<td><a href="/">Total</a></td>
+				<td class="total right">{{.Total}}</td>
+			</tr>
+			<tr>
+				<td>{{template "snooze"}}</td>
+				<td class="right">{{.Idle}}</td>
+			</tr>
+		</table>
+		</section>
+
+		<section id="chart">
+		<div id="chart_div"></div>
+		</section>
+
+		<section id="funcs">
+		<ul>
+		<li><a href="/gone.json">Dump</a> ({{len .Records}} tracks)</li>
+		<li><a href="/reset">Reset</a> (take care!)</li>
+		</ul>
+		</section>
+	</aside>
+{{end}}
+
+{{define "content"}}
+	<table>
+		<tr>
+			<th>Class</th>
+			<th>Name</th>
+			<th>Spent</th>
+		</tr>
+		{{range .Records}}
+		<tr class="records">
+			<td><a href="/{{.Class}}">{{.Class}}</a></td>
+			<td>{{.Name}}</td>
+			<td class="right">{{.Spent}}</td>
+		</tr>
+		{{end}}
+	</table>
+{{end}}
+
+{{define "root"}}
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>{{template "title" .}}</title>
+		{{template "refresh" .Refresh}}
+		{{template "style"}}
+		{{template "chart" .}}
+	</head>
+
+	<body>
+		<h1>{{template "title" .}}</h1>
+		{{template "aside" .}}
+		{{template "content" .}}
+	</body>
+</html>
+{{end}}

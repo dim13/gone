@@ -30,9 +30,9 @@ Installation
 Caveats
 -------
 
-For _xmonad_ Window Manager _EwmhDesktop_ extension is required.
+* For _xmonad_ Window Manager _EwmhDesktop_ extension is required.
 
-_xscreensaver_ seems to ignore MIT-SCREEN-SAVER extension.
+* _xscreensaver_ seems to ignore MIT-SCREEN-SAVER extension.
 Use xidle/xlock instead and/or activate X11 ScreenSaver:
 
     xset s default
