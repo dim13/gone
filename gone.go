@@ -144,10 +144,11 @@ func (t Tracks) Store(fname string) {
 }
 
 func (t Tracks) Cleanup() {
-	for {
+	tick := time.NewTicker(*refresh)
+	defer tick.Stop()
+	for range tick.C {
 		t.Remove(*expire)
 		t.Store(dumpFileName)
-		time.Sleep(*refresh)
 	}
 }
 
