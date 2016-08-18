@@ -5,11 +5,11 @@ import (
 	"encoding/gob"
 	"flag"
 	"fmt"
-	"go/build"
 	"log"
 	"os"
-	"path/filepath"
 	"time"
+
+	xdg "github.com/casimir/xdg-go"
 )
 
 type Tracks map[Window]Track
@@ -21,10 +21,10 @@ type Track struct {
 }
 
 var (
-	goneDir      = pkgpath("github.com/dim13/gone")
-	dumpFileName = filepath.Join(goneDir, "gone.gob")
-	logFileName  = filepath.Join(goneDir, "gone.log")
-	tmplFileName = filepath.Join(goneDir, "gone.tmpl")
+	app          = xdg.App{Name: "gone"}
+	dumpFileName = app.CachePath("gone.gob")
+	logFileName  = app.CachePath("gone.log")
+	tmplFileName = app.DataPath("gone.tmpl")
 )
 
 var (
@@ -41,14 +41,6 @@ var (
 	logger  *log.Logger
 	zzz     bool
 )
-
-func pkgpath(p string) string {
-	pkg, err := build.Import(p, "", build.FindOnly)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return pkg.Dir
-}
 
 func (t Track) String() string {
 	return fmt.Sprintf("%s %s",
