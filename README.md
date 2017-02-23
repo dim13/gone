@@ -20,7 +20,7 @@ triggers.
 As fallback (see caveats) _gone_ also stops at user inactivity.
 The inactive time is counted separated.
 
-Results are presented at http://localhost:8001/
+Results are presented at [http://localhost:8001/](http://localhost:8001/)
 
 Installation
 ------------
