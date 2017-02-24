@@ -3,9 +3,6 @@ Gone Time Tracker
 
 Where has my time gone? X11 automatic work activity tracker in pure Go.
 
-_Disclaimer_: may contain traces of bugs or be sometimes fubar. :)
-_Gone_ is work in progress. Be patient, update often, file bugs and
-send pull-requests.  After all, I'm just a hobbyist gopher.
 
 Synopsis
 --------
@@ -22,10 +19,12 @@ The inactive time is counted separated.
 
 Results are presented at [http://localhost:8001/](http://localhost:8001/)
 
+
 Installation
 ------------
 
     go get github.com/dim13/gone
+
 
 Caveats
 -------
@@ -37,10 +36,12 @@ Use xidle/xlock instead and/or activate X11 ScreenSaver:
 
     xset s default
 
+
 Alternatives
 ------------
 
 http://arbtt.nomeata.de/ - automatic, rule-based time tracker
+
 
 Dockerize
 ---------
