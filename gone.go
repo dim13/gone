@@ -7,9 +7,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"time"
-
-	xdg "github.com/casimir/xdg-go"
 )
 
 type Tracks map[Window]Track
@@ -21,10 +20,9 @@ type Track struct {
 }
 
 var (
-	app          = xdg.App{Name: "gone"}
-	dumpFileName = app.CachePath("gone.gob")
-	logFileName  = app.CachePath("gone.log")
-	tmplFileName = app.DataPath("gone.tmpl")
+	dumpFileName = path.Join(CachePath(), "gone", "gone.gob")
+	logFileName  = path.Join(CachePath(), "gone", "gone.log")
+	tmplFileName = path.Join(DataPath(), "gone", "gone.tmpl")
 )
 
 var (

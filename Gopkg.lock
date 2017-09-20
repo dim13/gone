@@ -7,15 +7,9 @@
   packages = [".","screensaver","xproto"]
   revision = "27f122750802c950b2c869a5b63dafcf590ced95"
 
-[[projects]]
-  branch = "master"
-  name = "github.com/casimir/xdg-go"
-  packages = ["."]
-  revision = "372ccc2180dab73316615641d5617c5ed3e35529"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d18fddac7723180d53897fcd6da229bc2a69841a46f7f46c950e30b049c6708d"
+  inputs-digest = "c75befe8da1bc6340b7049d2b6232c9aac3f562483ab81cab442d64e9e03e685"
   solver-name = "gps-cdcl"
   solver-version = 1

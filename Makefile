@@ -4,9 +4,7 @@ XDG_DATA_HOME   ?= ${HOME}/.local/share/
 XDG_CONFIG_HOME ?= ${HOME}/.config/
 XDG_CACHE_HOME  ?= ${HOME}/.cache/
 
-all: install xdg tmpl
-
-install:
+install: tmpl
 	go install -v
 
 xdg:
@@ -14,5 +12,5 @@ xdg:
 	install -d ${XDG_CONFIG_HOME}${APP}
 	install -d ${XDG_CACHE_HOME}${APP}
 
-tmpl:
+tmpl: xdg
 	install gone.tmpl ${XDG_DATA_HOME}${APP}
