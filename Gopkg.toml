@@ -24,7 +24,3 @@
 [[constraint]]
   branch = "master"
   name = "github.com/BurntSushi/xgb"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/casimir/xdg-go"
