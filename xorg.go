@@ -152,15 +152,14 @@ func Connect(display string) Xorg {
 	return x
 }
 
-func (x Xorg) waitForEvent() <-chan xgb.Event {
-	go func() {
+func (x Xorg) waitForEvent() {
+	for {
 		ev, err := x.conn.WaitForEvent()
 		if err != nil {
 			log.Println("wait for event:", err)
 		}
 		x.event <- ev
-	}()
-	return x.event
+	}
 }
 
 func (x Xorg) queryIdle() time.Duration {
@@ -177,10 +176,10 @@ func (x Xorg) Collect(t Tracker, timeout time.Duration) {
 	if win, ok := x.window(); ok {
 		t.Update(win)
 	}
-
+	go x.waitForEvent()
 	for {
 		select {
-		case event := <-x.waitForEvent():
+		case event := <-x.event:
 			switch e := event.(type) {
 			case xproto.PropertyNotifyEvent:
 				if win, ok := x.window(); ok {
