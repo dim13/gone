@@ -41,7 +41,8 @@ type Duration time.Duration
 var tmpl *template.Template
 
 func init() {
-	tmpl = template.Must(template.ParseFiles(tmplFileName))
+	t := FSMustString(false, "/static/gone.tmpl")
+	tmpl = template.Must(template.New("").Parse(t))
 }
 
 func (r Records) Len() int           { return len(r) }

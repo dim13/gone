@@ -1,6 +1,8 @@
 // Gone Time Tracker -or- Where has my time gone?
 package main
 
+//go:generate esc -o static.go static/
+
 import (
 	"encoding/gob"
 	"flag"
@@ -20,9 +22,8 @@ type Track struct {
 }
 
 var (
-	dumpFileName = path.Join(CachePath(), "gone", "gone.gob")
-	logFileName  = path.Join(CachePath(), "gone", "gone.log")
-	tmplFileName = path.Join(DataPath(), "gone", "gone.tmpl")
+	dumpFileName = path.Join(CachePath(), "gone.gob")
+	logFileName  = path.Join(CachePath(), "gone.log")
 )
 
 var (
