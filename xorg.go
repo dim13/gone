@@ -19,7 +19,6 @@ type Xorg struct {
 	netNameAtom *xproto.InternAtomReply
 	nameAtom    *xproto.InternAtomReply
 	classAtom   *xproto.InternAtomReply
-	event       chan xgb.Event
 }
 
 type Window struct {
@@ -34,8 +33,8 @@ type Tracker interface {
 }
 
 var (
-	errNoValue = errors.New("empty value")
-	errNoClass = errors.New("empty class")
+	ErrNoValue = errors.New("empty value")
+	ErrNoClass = errors.New("empty class")
 )
 
 func (x Xorg) atom(aname string) *xproto.InternAtomReply {
@@ -69,7 +68,7 @@ func (x Xorg) name(w xproto.Window) (string, error) {
 			return "", err
 		}
 		if string(name.Value) == "" {
-			return "", errNoValue
+			return "", ErrNoValue
 		}
 	}
 	return string(name.Value), nil
@@ -85,7 +84,7 @@ func (x Xorg) class(w xproto.Window) (string, error) {
 	if l := len(s); l > 0 && len(s[l-1]) != 0 {
 		return string(s[l-1]), nil
 	}
-	return "", errNoClass
+	return "", ErrNoClass
 }
 
 func (x Xorg) window() (Window, bool) {
@@ -103,14 +102,12 @@ func (x Xorg) window() (Window, bool) {
 		return Window{}, false
 	}
 	x.spy(id)
-	return Window{
-		Class: class,
-		Name:  name,
-	}, true
+	return Window{Class: class, Name: name}, true
 }
 
 func (x Xorg) spy(w xproto.Window) {
-	xproto.ChangeWindowAttributes(x.conn, w, xproto.CwEventMask, []uint32{xproto.EventMaskPropertyChange})
+	xproto.ChangeWindowAttributes(x.conn, w, xproto.CwEventMask,
+		[]uint32{xproto.EventMaskPropertyChange})
 }
 
 func (x Xorg) Close() {
@@ -141,20 +138,19 @@ func Connect(display string) Xorg {
 	x.netNameAtom = x.atom("_NET_WM_NAME")
 	x.nameAtom = x.atom("WM_NAME")
 	x.classAtom = x.atom("WM_CLASS")
-	x.event = make(chan xgb.Event, 1)
 
 	x.spy(x.root)
 
 	return x
 }
 
-func (x Xorg) waitForEvent() {
+func (x Xorg) waitForEvent(events chan<- xgb.Event) {
 	for {
 		ev, err := x.conn.WaitForEvent()
 		if err != nil {
 			log.Println("wait for event:", err)
 		}
-		x.event <- ev
+		events <- ev
 	}
 }
 
@@ -171,10 +167,11 @@ func (x Xorg) Collect(t Tracker, timeout time.Duration) {
 	if win, ok := x.window(); ok {
 		t.Update(win)
 	}
-	go x.waitForEvent()
+	events := make(chan xgb.Event, 1)
+	go x.waitForEvent(events)
 	for {
 		select {
-		case event := <-x.event:
+		case event := <-events:
 			switch e := event.(type) {
 			case xproto.PropertyNotifyEvent:
 				if win, ok := x.window(); ok {
