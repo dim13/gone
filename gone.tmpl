@@ -2,10 +2,6 @@
 
 {{define "snooze"}}Zzz&hellip;{{end}}
 
-{{define "refresh"}}
-	{{with .}}<meta http-equiv="refresh" content="{{.Seconds}}">{{end}}
-{{end}}
-
 {{define "style"}}
 	<link href='http://fonts.googleapis.com/css?family=Roboto:300&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
 	<style>
@@ -93,13 +89,6 @@
 		<section id="chart">
 		<div id="chart_div"></div>
 		</section>
-
-		<section id="funcs">
-		<ul>
-		<li><a href="/gone.json">Dump</a> ({{len .Records}} tracks)</li>
-		<li><a href="/reset">Reset</a> (take care!)</li>
-		</ul>
-		</section>
 	</aside>
 {{end}}
 
@@ -125,7 +114,8 @@
 <html>
 	<head>
 		<title>{{template "title" .}}</title>
-		{{template "refresh" .Refresh}}
+		<meta charset="utf-8">
+		{{with .Refresh}}<meta http-equiv="refresh" content="{{.Seconds}}">{{end}}
 		{{template "style"}}
 		{{template "chart" .}}
 	</head>

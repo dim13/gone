@@ -39,18 +39,15 @@ var (
 )
 
 func (x Xorg) atom(aname string) *xproto.InternAtomReply {
-	a, err := xproto.InternAtom(x.conn, true,
-		uint16(len(aname)), aname).Reply()
+	a, err := xproto.InternAtom(x.conn, true, uint16(len(aname)), aname).Reply()
 	if err != nil {
 		log.Fatal("atom: ", err)
 	}
 	return a
 }
 
-func (x Xorg) property(w xproto.Window,
-	a *xproto.InternAtomReply) (*xproto.GetPropertyReply, error) {
-	return xproto.GetProperty(x.conn, false, w, a.Atom,
-		xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
+func (x Xorg) property(w xproto.Window, a *xproto.InternAtomReply) (*xproto.GetPropertyReply, error) {
+	return xproto.GetProperty(x.conn, false, w, a.Atom, xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
 }
 
 func (x Xorg) active() xproto.Window {
@@ -113,8 +110,7 @@ func (x Xorg) window() (Window, bool) {
 }
 
 func (x Xorg) spy(w xproto.Window) {
-	xproto.ChangeWindowAttributes(x.conn, w, xproto.CwEventMask,
-		[]uint32{xproto.EventMaskPropertyChange})
+	xproto.ChangeWindowAttributes(x.conn, w, xproto.CwEventMask, []uint32{xproto.EventMaskPropertyChange})
 }
 
 func (x Xorg) Close() {
@@ -163,8 +159,7 @@ func (x Xorg) waitForEvent() {
 }
 
 func (x Xorg) queryIdle() time.Duration {
-	info, err := screensaver.QueryInfo(x.conn,
-		xproto.Drawable(x.root)).Reply()
+	info, err := screensaver.QueryInfo(x.conn, xproto.Drawable(x.root)).Reply()
 	if err != nil {
 		log.Println("query idle:", err)
 		return 0

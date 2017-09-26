@@ -41,8 +41,7 @@ var (
 )
 
 func (t Track) String() string {
-	return fmt.Sprintf("%s %s",
-		t.Seen.Format("2006/01/02 15:04:05"), t.Spent)
+	return fmt.Sprintf("%s %s", t.Seen.Format("2006/01/02 15:04:05"), t.Spent)
 }
 
 func (w Window) String() string {
@@ -90,7 +89,7 @@ func (t Tracks) Update(w Window) {
 	current = w
 }
 
-func (t Tracks) Remove(d time.Duration) {
+func (t Tracks) RemoveSince(d time.Duration) {
 	for k, v := range t {
 		if time.Since(v.Seen) > d || v.Idle > d {
 			logger.Println(v, k)
@@ -137,7 +136,7 @@ func (t Tracks) Cleanup() {
 	tick := time.NewTicker(*refresh)
 	defer tick.Stop()
 	for range tick.C {
-		t.Remove(*expire)
+		t.RemoveSince(*expire)
 		t.Store(dumpFileName)
 	}
 }
@@ -148,8 +147,7 @@ func main() {
 	X := Connect(*display)
 	defer X.Close()
 
-	logfile, err := os.OpenFile(logFileName,
-		os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	logfile, err := os.OpenFile(logFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -162,5 +160,7 @@ func main() {
 	go X.Collect(tracks, *timeout)
 	go tracks.Cleanup()
 
-	webReporter(*listen)
+	if err := webReporter(*listen); err != nil {
+		log.Fatal(err)
+	}
 }
