@@ -13,7 +13,12 @@ import (
 	"time"
 )
 
-type Tracks map[Window]Track
+type Tracks struct {
+	tracks  map[Window]Track
+	current Window
+	logger  *log.Logger
+	zzz     bool
+}
 
 type Track struct {
 	Seen  time.Time
@@ -26,13 +31,6 @@ var (
 	logFileName  = path.Join(CachePath(), "gone.log")
 )
 
-var (
-	tracks  Tracks
-	current Window
-	logger  *log.Logger
-	zzz     bool
-)
-
 func (t Track) String() string {
 	return fmt.Sprintf("%s %s", t.Seen.Format("2006/01/02 15:04:05"), t.Spent)
 }
@@ -41,58 +39,58 @@ func (w Window) String() string {
 	return fmt.Sprintf("%s %s", w.Class, w.Name)
 }
 
-func (t Tracks) Snooze(idle time.Duration) {
-	if !zzz {
-		logger.Println("away from keyboard, idle for", idle)
-		if c, ok := t[current]; ok {
+func (t *Tracks) Snooze(idle time.Duration) {
+	if !t.zzz {
+		t.logger.Println("away from keyboard, idle for", idle)
+		if c, ok := t.tracks[t.current]; ok {
 			c.Idle += idle
-			t[current] = c
+			t.tracks[t.current] = c
 		}
-		zzz = true
+		t.zzz = true
 	}
 }
 
-func (t Tracks) Wakeup() {
-	if zzz {
-		logger.Println("back to keyboard")
-		if c, ok := t[current]; ok {
+func (t *Tracks) Wakeup() {
+	if t.zzz {
+		t.logger.Println("back to keyboard")
+		if c, ok := t.tracks[t.current]; ok {
 			c.Seen = time.Now()
-			t[current] = c
+			t.tracks[t.current] = c
 		}
-		zzz = false
+		t.zzz = false
 	}
 }
 
-func (t Tracks) Update(w Window) {
-	if !zzz {
-		if c, ok := t[current]; ok {
+func (t *Tracks) Update(w Window) {
+	if !t.zzz {
+		if c, ok := t.tracks[t.current]; ok {
 			c.Spent += time.Since(c.Seen)
-			t[current] = c
+			t.tracks[t.current] = c
 		}
 	}
 
-	if _, ok := t[w]; !ok {
-		t[w] = Track{}
+	if _, ok := t.tracks[w]; !ok {
+		t.tracks[w] = Track{}
 	}
 
-	s := t[w]
+	s := t.tracks[w]
 	s.Seen = time.Now()
-	t[w] = s
+	t.tracks[w] = s
 
-	current = w
+	t.current = w
 }
 
 func (t Tracks) RemoveSince(d time.Duration) {
-	for k, v := range t {
+	for k, v := range t.tracks {
 		if time.Since(v.Seen) > d || v.Idle > d {
-			logger.Println(v, k)
-			delete(t, k)
+			t.logger.Println(v, k)
+			delete(t.tracks, k)
 		}
 	}
 }
 
-func Load(fname string) Tracks {
-	t := make(Tracks)
+func Load(fname string) *Tracks {
+	t := &Tracks{tracks: make(map[Window]Track)}
 	dump, err := os.Open(fname)
 	if err != nil {
 		log.Println(err)
@@ -152,15 +150,15 @@ func main() {
 		log.Fatal(err)
 	}
 	defer logfile.Close()
-	logger = log.New(logfile, "", log.LstdFlags)
 
-	tracks = Load(dumpFileName)
+	tracks := Load(dumpFileName)
+	tracks.logger = log.New(logfile, "", log.LstdFlags)
 	defer tracks.Store(dumpFileName)
 
 	go X.Collect(tracks, *timeout)
 	go tracks.Cleanup(*refresh, *expire)
 
-	if err := webReporter(*listen); err != nil {
+	if err := webReporter(tracks, *listen); err != nil {
 		log.Fatal(err)
 	}
 }

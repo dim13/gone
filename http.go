@@ -57,15 +57,15 @@ func (d Duration) String() string {
 	return fmt.Sprint(time.Duration(d).Truncate(time.Second))
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
+func (t Tracks) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var idx Index
-	idx.Zzz = zzz
+	idx.Zzz = t.zzz
 	idx.Refresh = time.Minute // TODO use flag value
 	class := r.URL.Path[1:]
 
 	classes := make(map[string]time.Duration)
 
-	for k, v := range tracks {
+	for k, v := range t.tracks {
 		classes[k.Class] += v.Spent
 		idx.Total += Duration(v.Spent)
 		idx.Idle += Duration(v.Idle)
@@ -92,13 +92,11 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func resetHandler(w http.ResponseWriter, r *http.Request) {
-	tracks.RemoveSince(0)
-	http.Redirect(w, r, "/", http.StatusFound)
-}
-
-func webReporter(port string) error {
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/reset", resetHandler)
+func webReporter(t *Tracks, port string) error {
+	http.Handle("/", t)
+	http.HandleFunc("/reset", func(w http.ResponseWriter, r *http.Request) {
+		t.RemoveSince(0)
+		http.Redirect(w, r, "/", http.StatusFound)
+	})
 	return http.ListenAndServe(port, nil)
 }
