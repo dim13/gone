@@ -27,14 +27,6 @@ var (
 )
 
 var (
-	display = flag.String("display", os.Getenv("DISPLAY"), "X11 display")
-	listen  = flag.String("listen", "127.0.0.1:8001", "web reporter")
-	timeout = flag.Duration("timeout", time.Minute*5, "idle timeout")
-	expire  = flag.Duration("expire", time.Hour*8, "expire timeout")
-	refresh = flag.Duration("refresh", time.Minute, "refresh interval")
-)
-
-var (
 	tracks  Tracks
 	current Window
 	logger  *log.Logger
@@ -133,16 +125,23 @@ func (t Tracks) Store(fname string) {
 	os.Rename(tmp, fname)
 }
 
-func (t Tracks) Cleanup() {
-	tick := time.NewTicker(*refresh)
+func (t Tracks) Cleanup(every, since time.Duration) {
+	tick := time.NewTicker(every)
 	defer tick.Stop()
 	for range tick.C {
-		t.RemoveSince(*expire)
+		t.RemoveSince(since)
 		t.Store(dumpFileName)
 	}
 }
 
 func main() {
+	var (
+		display = flag.String("display", os.Getenv("DISPLAY"), "X11 display")
+		listen  = flag.String("listen", "127.0.0.1:8001", "web reporter")
+		timeout = flag.Duration("timeout", time.Minute*5, "idle timeout")
+		expire  = flag.Duration("expire", time.Hour*8, "expire timeout")
+		refresh = flag.Duration("refresh", time.Minute, "refresh interval")
+	)
 	flag.Parse()
 
 	X := Connect(*display)
@@ -159,7 +158,7 @@ func main() {
 	defer tracks.Store(dumpFileName)
 
 	go X.Collect(tracks, *timeout)
-	go tracks.Cleanup()
+	go tracks.Cleanup(*refresh, *expire)
 
 	if err := webReporter(*listen); err != nil {
 		log.Fatal(err)

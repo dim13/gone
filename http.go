@@ -60,7 +60,7 @@ func (d Duration) String() string {
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	var idx Index
 	idx.Zzz = zzz
-	idx.Refresh = *refresh
+	idx.Refresh = time.Minute // TODO use flag value
 	class := r.URL.Path[1:]
 
 	classes := make(map[string]time.Duration)
