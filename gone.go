@@ -140,7 +140,10 @@ func main() {
 	)
 	flag.Parse()
 
-	X := Connect(*display)
+	X, err := Connect(*display)
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer X.Close()
 
 	logfile, err := os.OpenFile(*logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)

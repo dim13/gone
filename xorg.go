@@ -37,12 +37,8 @@ var (
 	ErrNoClass = errors.New("empty class")
 )
 
-func (x Xorg) atom(aname string) *xproto.InternAtomReply {
-	a, err := xproto.InternAtom(x.conn, true, uint16(len(aname)), aname).Reply()
-	if err != nil {
-		log.Fatal("atom: ", err)
-	}
-	return a
+func (x Xorg) atom(aname string) (*xproto.InternAtomReply, error) {
+	return xproto.InternAtom(x.conn, true, uint16(len(aname)), aname).Reply()
 }
 
 func (x Xorg) property(w xproto.Window, a *xproto.InternAtomReply) (*xproto.GetPropertyReply, error) {
@@ -114,18 +110,18 @@ func (x Xorg) Close() {
 	x.conn.Close()
 }
 
-func Connect(display string) Xorg {
+func Connect(display string) (Xorg, error) {
 	var x Xorg
 	var err error
 
 	x.conn, err = xgb.NewConnDisplay(display)
 	if err != nil {
-		log.Fatal("xgb: ", err)
+		return Xorg{}, err
 	}
 
 	err = screensaver.Init(x.conn)
 	if err != nil {
-		log.Fatal("screensaver: ", err)
+		return Xorg{}, err
 	}
 
 	setup := xproto.Setup(x.conn)
@@ -134,14 +130,25 @@ func Connect(display string) Xorg {
 	drw := xproto.Drawable(x.root)
 	screensaver.SelectInput(x.conn, drw, screensaver.EventNotifyMask)
 
-	x.activeAtom = x.atom("_NET_ACTIVE_WINDOW")
-	x.netNameAtom = x.atom("_NET_WM_NAME")
-	x.nameAtom = x.atom("WM_NAME")
-	x.classAtom = x.atom("WM_CLASS")
-
+	x.activeAtom, err = x.atom("_NET_ACTIVE_WINDOW")
+	if err != nil {
+		return Xorg{}, err
+	}
+	x.netNameAtom, err = x.atom("_NET_WM_NAME")
+	if err != nil {
+		return Xorg{}, err
+	}
+	x.nameAtom, err = x.atom("WM_NAME")
+	if err != nil {
+		return Xorg{}, err
+	}
+	x.classAtom, err = x.atom("WM_CLASS")
+	if err != nil {
+		return Xorg{}, err
+	}
 	x.spy(x.root)
 
-	return x
+	return x, nil
 }
 
 func (x Xorg) waitForEvent(events chan<- xgb.Event) {
