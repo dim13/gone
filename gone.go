@@ -14,10 +14,11 @@ import (
 )
 
 type Tracks struct {
-	tracks  map[Window]Track
-	current Window
-	logger  *log.Logger
-	zzz     bool
+	tracks   map[Window]Track
+	current  Window
+	logger   *log.Logger
+	zzz      bool
+	interval time.Duration
 }
 
 type Track struct {
@@ -84,8 +85,8 @@ func (t Tracks) RemoveSince(d time.Duration) {
 	}
 }
 
-func Load(fname string) *Tracks {
-	t := &Tracks{tracks: make(map[Window]Track)}
+func Load(fname string) map[Window]Track {
+	t := make(map[Window]Track)
 	dump, err := os.Open(fname)
 	if err != nil {
 		log.Println(err)
@@ -118,8 +119,8 @@ func (t Tracks) Store(fname string) {
 	os.Rename(tmp, fname)
 }
 
-func (t Tracks) Cleanup(every, since time.Duration, dump string) {
-	tick := time.NewTicker(every)
+func (t Tracks) Cleanup(since time.Duration, dump string) {
+	tick := time.NewTicker(t.interval)
 	defer tick.Stop()
 	for range tick.C {
 		t.RemoveSince(since)
@@ -148,12 +149,15 @@ func main() {
 	}
 	defer logfile.Close()
 
-	tracks := Load(*dumpFile)
-	tracks.logger = log.New(logfile, "", log.LstdFlags)
+	tracks := &Tracks{
+		tracks:   Load(*dumpFile),
+		logger:   log.New(logfile, "", log.LstdFlags),
+		interval: *refresh,
+	}
 	defer tracks.Store(*dumpFile)
 
 	go X.Collect(tracks, *timeout)
-	go tracks.Cleanup(*refresh, *expire, *dumpFile)
+	go tracks.Cleanup(*expire, *dumpFile)
 
 	if err := webReporter(tracks, *listen); err != nil {
 		log.Fatal(err)
