@@ -110,7 +110,7 @@ func (t Tracks) Store(fname string) {
 	}
 	defer dump.Close()
 	enc := gob.NewEncoder(dump)
-	err = enc.Encode(t)
+	err = enc.Encode(t.tracks)
 	if err != nil {
 		log.Println(err)
 		os.Remove(tmp)
