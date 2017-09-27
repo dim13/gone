@@ -156,18 +156,18 @@ func (x Xorg) waitForEvent(events chan<- xgb.Event) {
 		ev, err := x.conn.WaitForEvent()
 		if err != nil {
 			log.Println("wait for event:", err)
+			continue
 		}
 		events <- ev
 	}
 }
 
-func (x Xorg) queryIdle() time.Duration {
+func (x Xorg) queryIdle() (time.Duration, error) {
 	info, err := screensaver.QueryInfo(x.conn, xproto.Drawable(x.root)).Reply()
 	if err != nil {
-		log.Println("query idle:", err)
-		return 0
+		return 0, err
 	}
-	return time.Duration(info.MsSinceUserInput) * time.Millisecond
+	return time.Duration(info.MsSinceUserInput) * time.Millisecond, nil
 }
 
 func (x Xorg) Collect(t Tracker, timeout time.Duration) {
@@ -188,13 +188,21 @@ func (x Xorg) Collect(t Tracker, timeout time.Duration) {
 			case screensaver.NotifyEvent:
 				switch e.State {
 				case screensaver.StateOn:
-					t.Snooze(x.queryIdle())
+					idle, err := x.queryIdle()
+					if err != nil {
+						log.Println(err)
+					}
+					t.Snooze(idle)
 				default:
 					t.Wakeup()
 				}
 			}
 		case <-time.After(timeout):
-			t.Snooze(x.queryIdle())
+			idle, err := x.queryIdle()
+			if err != nil {
+				log.Println(err)
+			}
+			t.Snooze(idle)
 		}
 	}
 }
