@@ -76,13 +76,15 @@ func (t Tracks) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Class: k.Class,
 			Name:  k.Name,
 			Spent: Duration(v.Spent),
-			Idle:  Duration(v.Idle)})
+			Idle:  Duration(v.Idle),
+		})
 	}
 	for k, v := range classes {
 		idx.Classes = append(idx.Classes, Class{
 			Class:   k,
 			Spent:   Duration(v),
-			Percent: 100.0 * float64(v) / float64(idx.Total)})
+			Percent: 100.0 * float64(v) / float64(idx.Total),
+		})
 	}
 	sort.Sort(sort.Reverse(idx.Classes))
 	sort.Sort(sort.Reverse(idx.Records))
