@@ -58,16 +58,17 @@ func (x Xorg) name(w xproto.Window) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if string(name.Value) == "" {
-		name, err = x.property(w, x.nameAtom)
-		if err != nil {
-			return "", err
-		}
-		if string(name.Value) == "" {
-			return "", ErrNoValue
-		}
+	if name.ValueLen > 0 {
+		return string(name.Value), nil
 	}
-	return string(name.Value), nil
+	name, err = x.property(w, x.nameAtom)
+	if err != nil {
+		return "", err
+	}
+	if name.ValueLen > 0 {
+		return string(name.Value), nil
+	}
+	return "", ErrNoValue
 }
 
 func (x Xorg) class(w xproto.Window) (string, error) {
