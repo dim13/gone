@@ -19,6 +19,7 @@ type Xorg struct {
 	netNameAtom *xproto.InternAtomReply
 	nameAtom    *xproto.InternAtomReply
 	classAtom   *xproto.InternAtomReply
+	observed    map[xproto.Window]bool
 }
 
 type Window struct {
@@ -86,26 +87,29 @@ func (x Xorg) class(w xproto.Window) (string, error) {
 }
 
 func (x Xorg) window() (Window, bool) {
-	win := x.active()
+	w := x.active()
 	/* skip invalid window id */
-	if win == 0 {
+	if w == 0 {
 		return Window{}, false
 	}
-	class, err := x.class(win)
+	class, err := x.class(w)
 	if err != nil {
 		return Window{}, false
 	}
-	name, err := x.name(win)
+	name, err := x.name(w)
 	if err != nil {
 		return Window{}, false
 	}
-	x.spy(win)
-	return Window{ID: win, Class: class, Name: name}, true
+	x.spy(w)
+	return Window{ID: w, Class: class, Name: name}, true
 }
 
 func (x Xorg) spy(w xproto.Window) {
-	xproto.ChangeWindowAttributes(x.conn, w, xproto.CwEventMask,
-		[]uint32{xproto.EventMaskPropertyChange})
+	if !x.observed[w] {
+		xproto.ChangeWindowAttributes(x.conn, w, xproto.CwEventMask,
+			[]uint32{xproto.EventMaskPropertyChange})
+		x.observed[w] = true
+	}
 }
 
 func (x Xorg) Close() {
@@ -148,6 +152,7 @@ func Connect(display string) (Xorg, error) {
 	if err != nil {
 		return Xorg{}, err
 	}
+	x.observed = make(map[xproto.Window]bool)
 	x.spy(x.root)
 
 	return x, nil
