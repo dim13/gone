@@ -80,10 +80,14 @@ func (t Tracks) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	for k, v := range classes {
+		total := idx.Total
+		if total == 0 {
+			total = 1
+		}
 		idx.Classes = append(idx.Classes, Class{
 			Class:   k,
 			Spent:   Duration(v),
-			Percent: 100.0 * float64(v) / float64(idx.Total),
+			Percent: 100.0 * float64(v) / float64(total),
 		})
 	}
 	sort.Sort(sort.Reverse(idx.Classes))
