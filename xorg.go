@@ -22,6 +22,7 @@ type Xorg struct {
 }
 
 type Window struct {
+	ID    xproto.Window
 	Class string
 	Name  string
 }
@@ -85,21 +86,21 @@ func (x Xorg) class(w xproto.Window) (string, error) {
 }
 
 func (x Xorg) window() (Window, bool) {
-	id := x.active()
+	win := x.active()
 	/* skip invalid window id */
-	if id == 0 {
+	if win == 0 {
 		return Window{}, false
 	}
-	class, err := x.class(id)
+	class, err := x.class(win)
 	if err != nil {
 		return Window{}, false
 	}
-	name, err := x.name(id)
+	name, err := x.name(win)
 	if err != nil {
 		return Window{}, false
 	}
-	x.spy(id)
-	return Window{Class: class, Name: name}, true
+	x.spy(win)
+	return Window{ID: win, Class: class, Name: name}, true
 }
 
 func (x Xorg) spy(w xproto.Window) {
