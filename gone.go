@@ -1,6 +1,7 @@
 // Gone Time Tracker -or- Where has my time gone?
 package main
 
+//go:generate go get github.com/mjibson/esc
 //go:generate esc -o static.go static/
 
 import (

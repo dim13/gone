@@ -19,6 +19,7 @@ type Index struct {
 }
 
 type Record struct {
+	ID    int
 	Class string
 	Name  string
 	Spent Duration
@@ -73,6 +74,7 @@ func (t Tracks) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		idx.Records = append(idx.Records, Record{
+			ID:    int(k.ID),
 			Class: k.Class,
 			Name:  k.Name,
 			Spent: Duration(v.Spent),

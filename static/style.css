@@ -1,0 +1,36 @@
+body {
+	font-family: 'Roboto', sans-serif;
+	margin: 2% 6%;
+}
+aside {
+	float: right;
+}
+#box {
+	border: thin solid #428a42;
+	background: #efffef;
+	padding: 1em;
+	margin-left: 1em;
+}
+.records:nth-child(even) {
+	background: #efefef;
+}
+.records td:nth-child(2) {
+	width: 100%;
+}
+.total {
+	border-top: thin solid black;
+}
+a {
+	text-decoration: none;
+	color: #6c71ce;
+}
+ul {
+	list-style-type: none;
+}
+.right {
+	text-align: right;
+	width: 12ex;
+}
+td {
+	padding: 0 1ex;
+}
