@@ -44,27 +44,6 @@
 	</style>
 {{end}}
 
-{{define "chart"}}
-	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
-	<script type="text/javascript">
-		google.load('visualization', '1.0', {'packages':['corechart']});
-		google.setOnLoadCallback(drawChart);
-		function drawChart() {
-			var data = new google.visualization.DataTable();
-			data.addColumn('string', 'Class');
-			data.addColumn('number', 'Time');
-			data.addRows([
-			{{range .Classes}}['{{.Class}}', {{.Percent}}],{{end}}
-			]);
-			var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
-			var options = {
-				legend: 'none'
-			};
-			chart.draw(data, options);
-		}
-	</script>
-{{end}}
-
 {{define "aside"}}
 	<aside>
 		<section id="box">
@@ -84,10 +63,6 @@
 				<td class="right">{{.Idle}}</td>
 			</tr>
 		</table>
-		</section>
-
-		<section id="chart">
-		<div id="chart_div"></div>
 		</section>
 	</aside>
 {{end}}
@@ -117,7 +92,6 @@
 		<meta charset="utf-8">
 		{{with .Refresh}}<meta http-equiv="refresh" content="{{.Seconds}}">{{end}}
 		{{template "style"}}
-		{{template "chart" .}}
 	</head>
 
 	<body>

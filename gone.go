@@ -2,7 +2,7 @@
 package main
 
 //go:generate go get github.com/mjibson/esc
-//go:generate esc -o static.go static/
+//go:generate esc -ignore '.*\.swp' -o static.go static/
 
 import (
 	"flag"
