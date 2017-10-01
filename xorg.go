@@ -23,7 +23,7 @@ type Xorg struct {
 }
 
 type Window struct {
-	ID    xproto.Window
+	ID    int
 	Class string
 	Name  string
 }
@@ -101,7 +101,7 @@ func (x Xorg) window() (Window, bool) {
 		return Window{}, false
 	}
 	x.spy(w)
-	return Window{ID: w, Class: class, Name: name}, true
+	return Window{ID: int(w), Class: class, Name: name}, true
 }
 
 func (x Xorg) spy(w xproto.Window) {

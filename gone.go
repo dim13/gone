@@ -25,23 +25,25 @@ type Track struct {
 }
 
 func (t *Tracks) Snooze(idle time.Duration) {
-	if !t.zzz {
-		if c, ok := t.tracks[t.current]; ok {
-			c.Idle += idle
-			t.tracks[t.current] = c
-		}
-		t.zzz = true
+	if t.zzz {
+		return
 	}
+	if c, ok := t.tracks[t.current]; ok {
+		c.Idle += idle
+		t.tracks[t.current] = c
+	}
+	t.zzz = true
 }
 
 func (t *Tracks) Wakeup() {
-	if t.zzz {
-		if c, ok := t.tracks[t.current]; ok {
-			c.Seen = time.Now()
-			t.tracks[t.current] = c
-		}
-		t.zzz = false
+	if !t.zzz {
+		return
 	}
+	if c, ok := t.tracks[t.current]; ok {
+		c.Seen = time.Now()
+		t.tracks[t.current] = c
+	}
+	t.zzz = false
 }
 
 func (t *Tracks) Update(w Window) {
