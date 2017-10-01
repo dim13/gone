@@ -6,7 +6,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -23,14 +22,6 @@ type Track struct {
 	Seen  time.Time
 	Spent time.Duration
 	Idle  time.Duration
-}
-
-func (t Track) String() string {
-	return fmt.Sprintf("%s %s", t.Seen.Format("2006/01/02 15:04:05"), t.Spent)
-}
-
-func (w Window) String() string {
-	return fmt.Sprintf("%s %s", w.Class, w.Name)
 }
 
 func (t *Tracks) Snooze(idle time.Duration) {
