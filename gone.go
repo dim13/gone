@@ -81,8 +81,8 @@ func main() {
 		display = flag.String("display", os.Getenv("DISPLAY"), "X11 display")
 		listen  = flag.String("listen", "127.0.0.1:8001", "web reporter")
 		timeout = flag.Duration("timeout", time.Minute*5, "idle timeout")
-		expire  = flag.Duration("expire", time.Hour*8, "expire timeout")
-		refresh = flag.Duration("refresh", time.Minute, "refresh interval")
+		//expire  = flag.Duration("expire", time.Hour*8, "expire timeout")
+		//refresh = flag.Duration("refresh", time.Minute, "refresh interval")
 	)
 	flag.Parse()
 
@@ -92,6 +92,7 @@ func main() {
 	}
 	defer X.Close()
 
+	/* old
 	tracks := &Tracks{
 		tracks:   make(map[Window]Track),
 		interval: *refresh,
@@ -99,8 +100,13 @@ func main() {
 
 	go X.Collect(tracks, *timeout)
 	go tracks.Cleanup(*expire)
-
 	if err := webReporter(tracks, *listen); err != nil {
 		log.Fatal(err)
 	}
+	*/
+
+	b := NewBroker()
+	a := NewApp(b)
+	go X.Collect(a, *timeout)
+	a.Serve(*listen)
 }

@@ -188,7 +188,7 @@ func (x Xorg) Collect(t Tracker, timeout time.Duration) {
 			switch e := event.(type) {
 			case xproto.PropertyNotifyEvent:
 				if win, ok := x.window(); ok {
-					t.Idle(0)
+					//t.Idle(0)
 					t.Seen(win)
 				}
 			case screensaver.NotifyEvent:
