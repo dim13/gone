@@ -102,9 +102,5 @@ func (t Tracks) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func webReporter(t *Tracks, port string) error {
 	http.Handle("/", t)
-	http.HandleFunc("/reset", func(w http.ResponseWriter, r *http.Request) {
-		t.RemoveSince(0)
-		http.Redirect(w, r, "/", http.StatusFound)
-	})
 	return http.ListenAndServe(port, nil)
 }

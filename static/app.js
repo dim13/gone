@@ -1,5 +1,9 @@
+function clear() {
+	localStorage.clear();
+};
+
 var stream = new EventSource("events");
 
 stream.addEventListener("update", function(e) {
-	// ... e.data
+	document.getElementById("data").innerHTML = e.data;
 });
