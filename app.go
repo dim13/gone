@@ -12,37 +12,47 @@ const (
 )
 
 type App struct {
-	broker Broker
+	broker   Broker
+	current  Window
+	lastSeen time.Time
+	idle     time.Duration
 }
 
 func NewApp(b Broker) *App {
-	return &App{broker: b}
+	return &App{
+		broker:   b,
+		lastSeen: time.Now(),
+	}
 }
 
 func (a *App) Seen(w Window) {
 	data := struct {
-		ID    int
-		Class string
-		Name  string
-		Date  time.Time
+		ID     int
+		Class  string
+		Name   string
+		Active time.Duration
 	}{
-		ID:    w.ID,
-		Class: w.Class,
-		Name:  w.Name,
-		Date:  time.Now(),
+		ID:     a.current.ID,
+		Class:  a.current.Class,
+		Name:   a.current.Name,
+		Active: time.Since(a.lastSeen) - a.idle,
 	}
 	b, _ := json.Marshal(data)
 	a.broker.Send(Event{
 		Type: EventSeen,
 		Data: string(b),
 	})
+	a.current = w
+	a.lastSeen = time.Now()
+	a.idle = 0
 }
 
-func (a *App) Idle(d time.Duration) {
+func (a *App) Idle(idle time.Duration) {
+	a.idle = idle
 	data := struct {
 		Idle time.Duration
 	}{
-		Idle: d,
+		Idle: idle,
 	}
 	b, _ := json.Marshal(data)
 	a.broker.Send(Event{
