@@ -12,14 +12,14 @@ const (
 )
 
 type App struct {
-	b Broker
+	broker Broker
 }
 
-func NewApp(b Broker) App {
-	return App{b: b}
+func NewApp(b Broker) *App {
+	return &App{broker: b}
 }
 
-func (a App) Seen(w Window) {
+func (a *App) Seen(w Window) {
 	data := struct {
 		ID    int
 		Class string
@@ -32,27 +32,27 @@ func (a App) Seen(w Window) {
 		Date:  time.Now(),
 	}
 	b, _ := json.Marshal(data)
-	a.b.Send(Event{
+	a.broker.Send(Event{
 		Type: EventSeen,
 		Data: string(b),
 	})
 }
 
-func (a App) Idle(d time.Duration) {
+func (a *App) Idle(d time.Duration) {
 	data := struct {
 		Idle time.Duration
 	}{
 		Idle: d,
 	}
 	b, _ := json.Marshal(data)
-	a.b.Send(Event{
+	a.broker.Send(Event{
 		Type: EventIdle,
 		Data: string(b),
 	})
 }
 
-func (a App) Serve(addr string) {
+func (a *App) Serve(addr string) {
 	http.Handle("/", http.FileServer(Dir(true, "/static")))
-	http.Handle("/events", a.b)
+	http.Handle("/events", a.broker)
 	http.ListenAndServe(addr, nil)
 }
