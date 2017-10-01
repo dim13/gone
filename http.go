@@ -62,9 +62,7 @@ func (t Tracks) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	idx.Zzz = t.zzz
 	idx.Refresh = t.interval
 	class := r.URL.Path[1:]
-
 	classes := make(map[string]time.Duration)
-
 	for k, v := range t.tracks {
 		classes[k.Class] += v.Spent
 		idx.Total += Duration(v.Spent)

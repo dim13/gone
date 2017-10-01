@@ -24,29 +24,24 @@ type Track struct {
 	Idle  time.Duration
 }
 
-func (t *Tracks) Snooze(idle time.Duration) {
-	if t.zzz {
-		return
+func (t *Tracks) Idle(idle time.Duration) {
+	if idle > 0 && !t.zzz {
+		if c, ok := t.tracks[t.current]; ok {
+			c.Idle += idle
+			t.tracks[t.current] = c
+		}
+		t.zzz = true
 	}
-	if c, ok := t.tracks[t.current]; ok {
-		c.Idle += idle
-		t.tracks[t.current] = c
+	if idle == 0 && t.zzz {
+		if c, ok := t.tracks[t.current]; ok {
+			c.Seen = time.Now()
+			t.tracks[t.current] = c
+		}
+		t.zzz = false
 	}
-	t.zzz = true
 }
 
-func (t *Tracks) Wakeup() {
-	if !t.zzz {
-		return
-	}
-	if c, ok := t.tracks[t.current]; ok {
-		c.Seen = time.Now()
-		t.tracks[t.current] = c
-	}
-	t.zzz = false
-}
-
-func (t *Tracks) Update(w Window) {
+func (t *Tracks) Seen(w Window) {
 	if !t.zzz {
 		if c, ok := t.tracks[t.current]; ok {
 			c.Spent += time.Since(c.Seen)
