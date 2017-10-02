@@ -27,14 +27,14 @@ func NewApp(b Broker) *App {
 
 func (a *App) Seen(w Window) {
 	data := struct {
-		ID     int
 		Class  string
 		Name   string
+		Seen   time.Time
 		Active time.Duration
 	}{
-		ID:     a.current.ID,
 		Class:  a.current.Class,
 		Name:   a.current.Name,
+		Seen:   time.Now(),
 		Active: time.Since(a.lastSeen) - a.idle,
 	}
 	b, _ := json.Marshal(data)

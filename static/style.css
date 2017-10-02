@@ -11,11 +11,12 @@ aside {
 	padding: 1em;
 	margin-left: 1em;
 }
-.records:nth-child(even) {
+#table tr:nth-child(even) {
 	background: #efefef;
 }
-.records td:nth-child(2) {
+#table tr td:nth-child(2) {
 	width: 100%;
+	word-break: break-all;
 }
 .total {
 	border-top: thin solid black;
