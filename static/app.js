@@ -1,5 +1,6 @@
 function clearStorage() {
-	localStorage.clear();
+	tracks = new Array();
+	localStorage.removeItem("tracks");
 };
 
 var tracks = new Array();
