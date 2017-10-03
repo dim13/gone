@@ -20,10 +20,11 @@ func NewBroker() Broker {
 	return Broker{clients: make(map[chan Event]bool)}
 }
 
-func (b Broker) Send(ev Event) {
+func (b Broker) Send(ev Event) error {
 	for c := range b.clients {
 		c <- ev
 	}
+	return nil
 }
 
 func (b Broker) register(c chan Event) {

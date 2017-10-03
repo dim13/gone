@@ -10,49 +10,44 @@ type App struct {
 	broker  Broker
 	current Window
 	seen    time.Time
-	idle    time.Duration
+}
+
+type seenEvent struct {
+	Class  string
+	Name   string
+	Seen   time.Time
+	Active time.Duration
 }
 
 func NewApp(b Broker) *App {
-	return &App{
-		broker: b,
-		seen:   time.Now(),
-	}
+	return &App{broker: b, seen: time.Now()}
 }
 
-func (a *App) Seen(w Window) error {
-	data := struct {
-		Class  string
-		Name   string
-		Seen   time.Time
-		Active time.Duration
-	}{
+func (a *App) sendEvent(idle time.Duration) error {
+	defer func() { a.seen = time.Now() }()
+	b, err := json.Marshal(seenEvent{
 		Class:  a.current.Class,
 		Name:   a.current.Name,
-		Seen:   time.Now(),
-		Active: time.Since(a.seen) - a.idle,
-	}
-	b, err := json.Marshal(data)
+		Seen:   a.seen,
+		Active: time.Since(a.seen) - idle,
+	})
 	if err != nil {
 		return err
 	}
-	a.broker.Send(Event{
-		Type: "seen",
-		Data: string(b),
-	})
-	a.current = w
-	a.seen = time.Now()
-	a.idle = 0
-	return nil
+	return a.broker.Send(Event{Type: "seen", Data: string(b)})
+}
+
+func (a *App) Seen(w Window) error {
+	defer func() { a.current = w }()
+	return a.sendEvent(0)
 }
 
 func (a *App) Idle(idle time.Duration) error {
-	a.idle = idle
-	return nil
+	return a.sendEvent(idle)
 }
 
-func (a *App) Serve(addr string) {
+func (a *App) ListenAndServe(addr string) error {
 	http.Handle("/", http.FileServer(Dir(true, "/static")))
 	http.Handle("/events", a.broker)
-	http.ListenAndServe(addr, nil)
+	return http.ListenAndServe(addr, nil)
 }
