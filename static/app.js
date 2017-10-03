@@ -64,5 +64,5 @@ stream.addEventListener("seen", function(e) {
 });
 
 stream.addEventListener("idle", function(e) {
-	document.getElementById("idle").innerHTML = e.data;
+	//document.getElementById("idle").innerHTML = e.data;
 });
