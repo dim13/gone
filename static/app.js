@@ -9,25 +9,16 @@ function duration(ns) {
 	return ((d > 0) ? d + "d" : "") + ((h > 0) ? h + "h" : "") + ((m > 0) ? m + "m" : "") + s + "s";
 };
 
-function clearStorage() {
-	tracks = new Array();
-	localStorage.removeItem("tracks");
-};
-
-var tracks = new Array();
-
-document.addEventListener('DOMContentLoaded', function() {
-	tracks = JSON.parse(localStorage.getItem("tracks"));
-	display(tracks);
-});
-
 function update(data) {
-	var seen = false;
+	var tracks = JSON.parse(localStorage.getItem("tracks"));
+	if (tracks == null) {
+		tracks = new Array();
+	}
 	var then = Date.now() - (8*60*60*1000);
 	tracks = tracks.filter(function(item) {
-		var lastSeen = Date.parse(item.Seen);
-		return lastSeen > then;
+		return Date.parse(item.Seen) > then;
 	});
+	var seen = false;
 	tracks.map(function(item) {
 		if (item.Class == data.Class && item.Name == data.Name) {
 			seen = true;
@@ -42,9 +33,8 @@ function update(data) {
 		return a.Active - b.Active;
 	});
 	localStorage.setItem("tracks", JSON.stringify(tracks));
+	return tracks;
 }
-
-var stream = new EventSource("events");
 
 function display(tracks) {
 	var tab = document.getElementById("table");
@@ -54,12 +44,22 @@ function display(tracks) {
 		row.insertCell(0).innerHTML = item.Class;
 		row.insertCell(1).innerHTML = item.Name;
 		row.insertCell(2).innerHTML = duration(item.Active);
-		row.insertCell(3).innerHTML = item.Seen;
 	});
 };
 
+function clearStorage() {
+	localStorage.clear();
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+	var tracks = JSON.parse(localStorage.getItem("tracks"));
+	display(tracks);
+});
+
+var stream = new EventSource("events");
+
 stream.addEventListener("seen", function(e) {
-	update(JSON.parse(e.data));
+	var tracks = update(JSON.parse(e.data));
 	display(tracks);
 });
 
