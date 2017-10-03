@@ -20,7 +20,7 @@ func NewApp(b Broker) *App {
 	}
 }
 
-func (a *App) Seen(w Window) {
+func (a *App) Seen(w Window) error {
 	data := struct {
 		Class  string
 		Name   string
@@ -32,7 +32,10 @@ func (a *App) Seen(w Window) {
 		Seen:   time.Now(),
 		Active: time.Since(a.seen) - a.idle,
 	}
-	b, _ := json.Marshal(data)
+	b, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
 	a.broker.Send(Event{
 		Type: "seen",
 		Data: string(b),
@@ -40,10 +43,12 @@ func (a *App) Seen(w Window) {
 	a.current = w
 	a.seen = time.Now()
 	a.idle = 0
+	return nil
 }
 
-func (a *App) Idle(idle time.Duration) {
+func (a *App) Idle(idle time.Duration) error {
 	a.idle = idle
+	return nil
 }
 
 func (a *App) Serve(addr string) {

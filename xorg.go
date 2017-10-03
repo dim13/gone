@@ -29,8 +29,8 @@ type Window struct {
 }
 
 type Tracker interface {
-	Seen(Window)
-	Idle(time.Duration)
+	Seen(Window) error
+	Idle(time.Duration) error
 }
 
 var (
@@ -178,7 +178,10 @@ func (x Xorg) queryIdle() (time.Duration, error) {
 
 func (x Xorg) Collect(t Tracker, timeout time.Duration) {
 	if win, ok := x.window(); ok {
-		t.Seen(win)
+		err := t.Seen(win)
+		if err != nil {
+			log.Println("seen", err)
+		}
 	}
 	events := make(chan xgb.Event, 1)
 	go x.waitForEvent(events)
@@ -188,27 +191,38 @@ func (x Xorg) Collect(t Tracker, timeout time.Duration) {
 			switch e := event.(type) {
 			case xproto.PropertyNotifyEvent:
 				if win, ok := x.window(); ok {
-					//t.Idle(0)
-					t.Seen(win)
+					err := t.Seen(win)
+					if err != nil {
+						log.Println("seen", err)
+					}
 				}
 			case screensaver.NotifyEvent:
 				switch e.State {
 				case screensaver.StateOn:
 					idle, err := x.queryIdle()
 					if err != nil {
-						log.Println(err)
+						log.Println("query idle", err)
 					}
-					t.Idle(idle)
+					err = t.Idle(idle)
+					if err != nil {
+						log.Println("idle", err)
+					}
 				case screensaver.StateOff:
-					t.Idle(0)
+					err := t.Idle(0)
+					if err != nil {
+						log.Println("idle", err)
+					}
 				}
 			}
 		case <-time.After(timeout):
 			idle, err := x.queryIdle()
 			if err != nil {
-				log.Println(err)
+				log.Println("query idle", err)
 			}
-			t.Idle(idle)
+			err = t.Idle(idle)
+			if err != nil {
+				log.Println("idle", err)
+			}
 		}
 	}
 }
