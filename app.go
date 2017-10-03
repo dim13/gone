@@ -6,22 +6,17 @@ import (
 	"time"
 )
 
-const (
-	EventSeen = "seen"
-	EventIdle = "idle"
-)
-
 type App struct {
-	broker   Broker
-	current  Window
-	lastSeen time.Time
-	idle     time.Duration
+	broker  Broker
+	current Window
+	seen    time.Time
+	idle    time.Duration
 }
 
 func NewApp(b Broker) *App {
 	return &App{
-		broker:   b,
-		lastSeen: time.Now(),
+		broker: b,
+		seen:   time.Now(),
 	}
 }
 
@@ -35,30 +30,20 @@ func (a *App) Seen(w Window) {
 		Class:  a.current.Class,
 		Name:   a.current.Name,
 		Seen:   time.Now(),
-		Active: time.Since(a.lastSeen) - a.idle,
+		Active: time.Since(a.seen) - a.idle,
 	}
 	b, _ := json.Marshal(data)
 	a.broker.Send(Event{
-		Type: EventSeen,
+		Type: "seen",
 		Data: string(b),
 	})
 	a.current = w
-	a.lastSeen = time.Now()
+	a.seen = time.Now()
 	a.idle = 0
 }
 
 func (a *App) Idle(idle time.Duration) {
 	a.idle = idle
-	data := struct {
-		Idle time.Duration
-	}{
-		Idle: idle,
-	}
-	b, _ := json.Marshal(data)
-	a.broker.Send(Event{
-		Type: EventIdle,
-		Data: string(b),
-	})
 }
 
 func (a *App) Serve(addr string) {

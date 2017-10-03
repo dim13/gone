@@ -62,7 +62,3 @@ stream.addEventListener("seen", function(e) {
 	var tracks = update(JSON.parse(e.data));
 	display(tracks);
 });
-
-stream.addEventListener("idle", function(e) {
-	//document.getElementById("idle").innerHTML = e.data;
-});

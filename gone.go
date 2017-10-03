@@ -92,19 +92,6 @@ func main() {
 	}
 	defer X.Close()
 
-	/* old
-	tracks := &Tracks{
-		tracks:   make(map[Window]Track),
-		interval: *refresh,
-	}
-
-	go X.Collect(tracks, *timeout)
-	go tracks.Cleanup(*expire)
-	if err := webReporter(tracks, *listen); err != nil {
-		log.Fatal(err)
-	}
-	*/
-
 	b := NewBroker()
 	a := NewApp(b)
 	go X.Collect(a, *timeout)

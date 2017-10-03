@@ -26,16 +26,16 @@ func (b Broker) Send(ev Event) {
 	}
 }
 
-func (b Broker) Register(c chan Event) {
+func (b Broker) register(c chan Event) {
 	b.Lock()
-	defer b.Unlock()
 	b.clients[c] = true
+	b.Unlock()
 }
 
-func (b Broker) Deregister(c chan Event) {
+func (b Broker) deregister(c chan Event) {
 	b.Lock()
-	defer b.Unlock()
 	delete(b.clients, c)
+	b.Unlock()
 }
 
 func (b Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -53,8 +53,8 @@ func (b Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c := make(chan Event)
 	defer close(c)
 
-	b.Register(c)
-	defer b.Deregister(c)
+	b.register(c)
+	defer b.deregister(c)
 
 	for ev := range c {
 		select {

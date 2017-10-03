@@ -18,6 +18,9 @@ aside {
 	width: 100%;
 	word-break: break-all;
 }
+#table tr td:nth-child(3) {
+	text-align: right;
+}
 .total {
 	border-top: thin solid black;
 }
