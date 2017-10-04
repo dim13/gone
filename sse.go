@@ -1,28 +1,37 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
-type Event struct {
-	Type string
-	Data string
+type msg struct {
+	event string
+	data  string
 }
 
 type Broker struct {
-	clients map[chan Event]bool
+	clients map[chan msg]bool
 }
 
 func NewBroker() Broker {
-	return Broker{clients: make(map[chan Event]bool)}
+	return Broker{clients: make(map[chan msg]bool)}
 }
 
-func (b Broker) Send(ev Event) error {
+func (b Broker) Send(event, data string) error {
 	for c := range b.clients {
-		c <- ev
+		c <- msg{event: event, data: data}
 	}
 	return nil
+}
+
+func (b Broker) SendJSON(event string, v interface{}) error {
+	data, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	return b.Send(event, string(data))
 }
 
 func (b Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +46,7 @@ func (b Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	c := make(chan Event)
+	c := make(chan msg)
 	defer close(c)
 
 	b.clients[c] = true
@@ -48,10 +57,10 @@ func (b Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case <-r.Context().Done():
 			return
 		default:
-			if ev.Type != "" {
-				fmt.Fprintf(w, "event: %s\n", ev.Type)
+			if ev.event != "" {
+				fmt.Fprintf(w, "event: %s\n", ev.event)
 			}
-			fmt.Fprintf(w, "data: %s\n\n", ev.Data)
+			fmt.Fprintf(w, "data: %s\n\n", ev.data)
 			flusher.Flush()
 		}
 	}

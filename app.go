@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 )
@@ -25,16 +24,13 @@ func NewApp(b Broker) *App {
 
 func (a *App) sendEvent(idle time.Duration) error {
 	defer func() { a.seen = time.Now() }()
-	b, err := json.Marshal(seenEvent{
+	ev := seenEvent{
 		Class:  a.current.Class,
 		Name:   a.current.Name,
 		Seen:   a.seen,
 		Active: time.Since(a.seen) - idle,
-	})
-	if err != nil {
-		return err
 	}
-	return a.broker.Send(Event{Type: "seen", Data: string(b)})
+	return a.broker.SendJSON("seen", ev)
 }
 
 func (a *App) Seen(w Window) error {
