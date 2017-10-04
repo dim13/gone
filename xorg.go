@@ -42,6 +42,14 @@ func (x Xorg) atom(aname string) (*xproto.InternAtomReply, error) {
 	return xproto.InternAtom(x.conn, true, uint16(len(aname)), aname).Reply()
 }
 
+func (x Xorg) atomMust(aname string) *xproto.InternAtomReply {
+	a, err := x.atom(aname)
+	if err != nil {
+		panic(err)
+	}
+	return a
+}
+
 func (x Xorg) property(w xproto.Window, a *xproto.InternAtomReply) (*xproto.GetPropertyReply, error) {
 	return xproto.GetProperty(x.conn, false, w, a.Atom, xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
 }
@@ -104,11 +112,12 @@ func (x Xorg) window() (Window, bool) {
 }
 
 func (x Xorg) spy(w xproto.Window) {
-	if !x.observed[w] {
-		xproto.ChangeWindowAttributes(x.conn, w, xproto.CwEventMask,
-			[]uint32{xproto.EventMaskPropertyChange})
-		x.observed[w] = true
+	if x.observed[w] {
+		return
 	}
+	xproto.ChangeWindowAttributes(x.conn, w, xproto.CwEventMask,
+		[]uint32{xproto.EventMaskPropertyChange})
+	x.observed[w] = true
 }
 
 func (x Xorg) Close() {
@@ -129,28 +138,14 @@ func Connect(display string) (Xorg, error) {
 		return Xorg{}, err
 	}
 
-	setup := xproto.Setup(x.conn)
-	x.root = setup.DefaultScreen(x.conn).Root
+	x.root = xproto.Setup(x.conn).DefaultScreen(x.conn).Root
+	screensaver.SelectInput(x.conn, xproto.Drawable(x.root), screensaver.EventNotifyMask)
 
-	drw := xproto.Drawable(x.root)
-	screensaver.SelectInput(x.conn, drw, screensaver.EventNotifyMask)
+	x.activeAtom = x.atomMust("_NET_ACTIVE_WINDOW")
+	x.netNameAtom = x.atomMust("_NET_WM_NAME")
+	x.nameAtom = x.atomMust("WM_NAME")
+	x.classAtom = x.atomMust("WM_CLASS")
 
-	x.activeAtom, err = x.atom("_NET_ACTIVE_WINDOW")
-	if err != nil {
-		return Xorg{}, err
-	}
-	x.netNameAtom, err = x.atom("_NET_WM_NAME")
-	if err != nil {
-		return Xorg{}, err
-	}
-	x.nameAtom, err = x.atom("WM_NAME")
-	if err != nil {
-		return Xorg{}, err
-	}
-	x.classAtom, err = x.atom("WM_CLASS")
-	if err != nil {
-		return Xorg{}, err
-	}
 	x.observed = make(map[xproto.Window]bool)
 	x.spy(x.root)
 
