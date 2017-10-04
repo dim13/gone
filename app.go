@@ -23,7 +23,6 @@ func NewApp(b Broker) *App {
 }
 
 func (a *App) sendEvent(idle time.Duration) error {
-	defer func() { a.seen = time.Now() }()
 	ev := seenEvent{
 		Class:  a.current.Class,
 		Name:   a.current.Name,
@@ -34,11 +33,20 @@ func (a *App) sendEvent(idle time.Duration) error {
 }
 
 func (a *App) Seen(w Window) error {
-	defer func() { a.current = w }()
+	defer func() {
+		a.seen = time.Now()
+		a.current = w
+	}()
 	return a.sendEvent(0)
 }
 
 func (a *App) Idle(idle time.Duration) error {
+	defer func() {
+		a.seen = time.Now()
+	}()
+	if idle == 0 {
+		return nil
+	}
 	return a.sendEvent(idle)
 }
 
