@@ -189,14 +189,18 @@ func (x Xorg) Collect(t Tracker) {
 				}
 			}
 		case screensaver.NotifyEvent:
-			if e.State == screensaver.StateOn {
+			switch e.State {
+			case screensaver.StateOn:
 				idle, err := x.queryIdle()
 				if err != nil {
 					log.Println("query idle", err)
 				}
-				err = t.Idle(idle)
-				if err != nil {
-					log.Println("idle", err)
+				if err := t.Idle(idle); err != nil {
+					log.Println("idle on", err)
+				}
+			case screensaver.StateOff:
+				if err := t.Idle(0); err != nil {
+					log.Println("idle off", err)
 				}
 			}
 		}
