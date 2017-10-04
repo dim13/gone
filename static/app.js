@@ -7,17 +7,33 @@ function duration(ns) {
 	var h = x % 24;
 	var d = Math.floor(x/24);
 	return ((d > 0) ? d + "d" : "") + ((h > 0) ? h + "h" : "") + ((m > 0) ? m + "m" : "") + s + "s";
-};
+}
 
-function update(data) {
+function loadTracks() {
 	var tracks = JSON.parse(localStorage.getItem("tracks"));
 	if (tracks == null) {
-		tracks = new Array();
+		return new Array();
 	}
-	var then = Date.now() - (8*60*60*1000);
-	tracks = tracks.filter(function(item) {
-		return Date.parse(item.Seen) > then;
+	return removeOld(tracks, 8);
+}
+
+function storeTracks(tracks) {
+	tracks.sort(function(a, b) {
+		return a.Active - b.Active;
 	});
+	localStorage.setItem("tracks", JSON.stringify(tracks));
+	return tracks;
+}
+
+function removeOld(tracks, h) {
+	var t = Date.now() - (h * 60 * 60 * 1000);
+	return tracks.filter(function(item) {
+		return Date.parse(item.Seen) > t;
+	});
+}
+
+function update(data) {
+	var tracks = loadTracks()
 	var seen = false;
 	tracks.map(function(item) {
 		if (item.Class == data.Class && item.Name == data.Name) {
@@ -29,11 +45,7 @@ function update(data) {
 	if (!seen) {
 		tracks.push(data);
 	}
-	tracks.sort(function(a, b) {
-		return a.Active - b.Active;
-	});
-	localStorage.setItem("tracks", JSON.stringify(tracks));
-	return tracks;
+	return storeTracks(tracks);
 }
 
 function display(tracks) {
@@ -45,14 +57,14 @@ function display(tracks) {
 		row.insertCell(1).innerHTML = item.Name;
 		row.insertCell(2).innerHTML = duration(item.Active);
 	});
-};
+}
 
 function clearStorage() {
 	localStorage.clear();
-};
+}
 
 document.addEventListener('DOMContentLoaded', function() {
-	var tracks = JSON.parse(localStorage.getItem("tracks"));
+	var tracks = loadTracks();
 	display(tracks);
 });
 
