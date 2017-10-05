@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// App holds application data
+// App holds application context
 type App struct {
 	broker  Broker
 	current Window
