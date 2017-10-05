@@ -23,12 +23,11 @@ func main() {
 	}
 	defer X.Close()
 
-	b := NewBroker()
-	a := NewApp(b)
+	app := NewApp(NewBroker())
 
-	go X.Collect(a)
+	go X.Collect(app)
 
-	if err := a.ListenAndServe(*listen); err != nil {
+	if err := app.ListenAndServe(*listen); err != nil {
 		log.Fatal(err)
 	}
 }
