@@ -19,7 +19,7 @@ type seenEvent struct {
 	Active time.Duration
 }
 
-// NewApp creates a new application inctance
+// NewApp creates a new application insctance
 func NewApp(b Broker) *App {
 	return &App{broker: b, seen: time.Now()}
 }
