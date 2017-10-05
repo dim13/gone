@@ -18,9 +18,6 @@ function loadTracks() {
 }
 
 function storeTracks(tracks) {
-	tracks.sort(function(a, b) {
-		return b.Active - a.Active;
-	});
 	localStorage.setItem("tracks", JSON.stringify(tracks));
 	return tracks;
 }
@@ -45,6 +42,9 @@ function update(data) {
 	if (!seen) {
 		tracks.push(data);
 	}
+	tracks.sort(function(a, b) {
+		return b.Active - a.Active;
+	});
 	return storeTracks(tracks);
 }
 
