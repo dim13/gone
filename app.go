@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// App holds application data
 type App struct {
 	broker  Broker
 	current Window
@@ -18,6 +19,7 @@ type seenEvent struct {
 	Active time.Duration
 }
 
+// NewApp creates a new application inctance
 func NewApp(b Broker) *App {
 	return &App{broker: b, seen: time.Now()}
 }
@@ -32,6 +34,7 @@ func (a *App) sendEvent(idle time.Duration) error {
 	return a.broker.SendJSON("seen", ev)
 }
 
+// Seen Window event handler
 func (a *App) Seen(w Window) error {
 	defer func() {
 		a.seen = time.Now()
@@ -40,6 +43,7 @@ func (a *App) Seen(w Window) error {
 	return a.sendEvent(0)
 }
 
+// Idle event handler
 func (a *App) Idle(idle time.Duration) error {
 	defer func() {
 		a.seen = time.Now()
@@ -50,6 +54,7 @@ func (a *App) Idle(idle time.Duration) error {
 	return a.sendEvent(idle)
 }
 
+// ListenAndServe launches http service
 func (a *App) ListenAndServe(addr string) error {
 	http.Handle("/", http.FileServer(Dir(true, "/static")))
 	http.Handle("/events", a.broker)

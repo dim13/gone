@@ -12,6 +12,7 @@ import (
 	"github.com/BurntSushi/xgb/xproto"
 )
 
+// Xorg holds X11 relavant properties
 type Xorg struct {
 	conn        *xgb.Conn
 	root        xproto.Window
@@ -22,21 +23,18 @@ type Xorg struct {
 	observed    map[xproto.Window]bool
 }
 
+// Window description
 type Window struct {
 	ID    int
 	Class string
 	Name  string
 }
 
+// Tracker interface
 type Tracker interface {
 	Seen(Window) error
 	Idle(time.Duration) error
 }
-
-var (
-	ErrNoValue = errors.New("empty value")
-	ErrNoClass = errors.New("empty class")
-)
 
 func (x Xorg) atom(aname string) (*xproto.InternAtomReply, error) {
 	return xproto.InternAtom(x.conn, true, uint16(len(aname)), aname).Reply()
@@ -77,7 +75,7 @@ func (x Xorg) name(w xproto.Window) (string, error) {
 	if name.ValueLen > 0 {
 		return string(name.Value), nil
 	}
-	return "", ErrNoValue
+	return "", errors.New("no value")
 }
 
 func (x Xorg) class(w xproto.Window) (string, error) {
@@ -90,7 +88,7 @@ func (x Xorg) class(w xproto.Window) (string, error) {
 	if l := len(s); l > 0 && len(s[l-1]) != 0 {
 		return string(s[l-1]), nil
 	}
-	return "", ErrNoClass
+	return "", errors.New("no class")
 }
 
 func (x Xorg) window() (Window, bool) {
@@ -120,10 +118,12 @@ func (x Xorg) spy(w xproto.Window) {
 	x.observed[w] = true
 }
 
+// Close X11 connection
 func (x Xorg) Close() {
 	x.conn.Close()
 }
 
+// Connect to X11 server
 func Connect(display string) (Xorg, error) {
 	var x Xorg
 	var err error
@@ -171,6 +171,7 @@ func (x Xorg) queryIdle() (time.Duration, error) {
 	return time.Duration(info.MsSinceUserInput) * time.Millisecond, nil
 }
 
+// Collect active window data
 func (x Xorg) Collect(t Tracker) {
 	if win, ok := x.window(); ok {
 		err := t.Seen(win)

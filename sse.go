@@ -11,14 +11,17 @@ type msg struct {
 	data  string
 }
 
+// Broker for SSE connections
 type Broker struct {
 	clients map[chan msg]bool
 }
 
+// NewBroker allocates a new broker
 func NewBroker() Broker {
 	return Broker{clients: make(map[chan msg]bool)}
 }
 
+// Send event
 func (b Broker) Send(event, data string) error {
 	for c := range b.clients {
 		c <- msg{event: event, data: data}
@@ -26,6 +29,7 @@ func (b Broker) Send(event, data string) error {
 	return nil
 }
 
+// SendJSON event
 func (b Broker) SendJSON(event string, v interface{}) error {
 	data, err := json.Marshal(v)
 	if err != nil {
