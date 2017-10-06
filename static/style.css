@@ -1,5 +1,6 @@
 body {
-	font-family: sans-serif;
+	font-family: 'Helvetica', sans-serif;
+	font-size: smaller;
 	margin: 2% 6%;
 }
 aside {
@@ -11,18 +12,21 @@ aside {
 	padding: 1em;
 	margin-left: 1em;
 }
-#table tr:nth-child(even) {
+#records tr:nth-child(even) {
 	background: #efefef;
 }
-#table tr td:nth-child(2) {
+#records td:nth-child(2) {
 	width: 100%;
 	word-break: break-all;
 }
-#table tr td:nth-child(3) {
+#records td:nth-child(3) {
 	text-align: right;
 }
-.total {
+#total {
 	border-top: thin solid black;
+}
+#classes td:nth-child(2) {
+	text-align: right;
 }
 a {
 	text-decoration: none;
@@ -30,10 +34,6 @@ a {
 }
 ul {
 	list-style-type: none;
-}
-.right {
-	text-align: right;
-	width: 12ex;
 }
 td {
 	padding: 0 1ex;

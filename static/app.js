@@ -11,9 +11,7 @@ function duration(ns) {
 
 function loadTracks() {
 	var tracks = JSON.parse(localStorage.getItem("tracks"));
-	if (tracks == null) {
-		return new Array();
-	}
+	tracks = tracks ? tracks : new Array();
 	return removeOld(tracks, 8);
 }
 
@@ -27,6 +25,16 @@ function removeOld(tracks, h) {
 	return tracks.filter(function(item) {
 		return Date.parse(item.Seen) > t;
 	});
+}
+
+function overview(tracks) {
+	var m = new Map();
+	tracks.map(function(item) {
+		var v = m.get(item.Class);
+		v = v ? v : 0;
+		m.set(item.Class, v + item.Active);
+	});
+	return m;
 }
 
 function update(data) {
@@ -60,7 +68,31 @@ function display(tracks) {
 		row.insertCell(1).innerHTML = item.Name;
 		row.insertCell(2).innerHTML = duration(item.Active);
 	});
-	document.getElementById("table").innerHTML = table.innerHTML;
+	var records = document.getElementById("records");
+	while (records.hasChildNodes()) {
+		records.removeChild(records.lastChild);
+	}
+	records.appendChild(table);
+
+	var table = document.createElement("table");
+	var classMap = overview(tracks);
+	var total = 0;
+	classMap.forEach(function(value, key) {
+		var row = table.insertRow(-1);
+		row.insertCell(0).innerHTML = key;
+		row.insertCell(1).innerHTML = duration(value);
+		total += value;
+	});
+	var totalRow = table.insertRow(-1);
+	totalRow.insertCell(0).innerHTML = "Total";
+	var d = totalRow.insertCell(1);
+	d.id = "total";
+	d.innerHTML = duration(total);
+	var classes = document.getElementById("classes");
+	while (classes.hasChildNodes()) {
+		classes.removeChild(classes.lastChild);
+	}
+	classes.appendChild(table);
 }
 
 function clearStorage() {
