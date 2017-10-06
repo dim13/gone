@@ -105,11 +105,11 @@ func (x Xorg) window() (Window, bool) {
 	if err != nil {
 		return Window{}, false
 	}
-	x.spy(w)
+	x.observe(w)
 	return Window{ID: int(w), Class: class, Name: name}, true
 }
 
-func (x Xorg) spy(w xproto.Window) {
+func (x Xorg) observe(w xproto.Window) {
 	if x.observed[w] {
 		return
 	}
@@ -147,20 +147,9 @@ func Connect(display string) (Xorg, error) {
 	x.classAtom = x.atomMust("WM_CLASS")
 
 	x.observed = make(map[xproto.Window]bool)
-	x.spy(x.root)
+	x.observe(x.root)
 
 	return x, nil
-}
-
-func (x Xorg) waitForEvent(events chan<- xgb.Event) {
-	for {
-		ev, err := x.conn.WaitForEvent()
-		if err != nil {
-			log.Println("wait for event:", err)
-			continue
-		}
-		events <- ev
-	}
 }
 
 func (x Xorg) queryIdle() (time.Duration, error) {
@@ -179,10 +168,13 @@ func (x Xorg) Collect(t Tracker) {
 			log.Println("seen", err)
 		}
 	}
-	events := make(chan xgb.Event, 1)
-	go x.waitForEvent(events)
-	for event := range events {
-		switch e := event.(type) {
+	for {
+		event, err := x.conn.WaitForEvent()
+		if err != nil {
+			log.Println("wait for event", err)
+			continue
+		}
+		switch ev := event.(type) {
 		case xproto.PropertyNotifyEvent:
 			if win, ok := x.window(); ok {
 				if err := t.Seen(win); err != nil {
@@ -190,7 +182,7 @@ func (x Xorg) Collect(t Tracker) {
 				}
 			}
 		case screensaver.NotifyEvent:
-			switch e.State {
+			switch ev.State {
 			case screensaver.StateOn:
 				idle, err := x.queryIdle()
 				if err != nil {
