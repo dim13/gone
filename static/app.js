@@ -56,7 +56,14 @@ function update(data) {
 	return storeTracks(tracks);
 }
 
-function display(tracks) {
+function replace(element, content) {
+	while (element.hasChildNodes()) {
+		element.removeChild(element.lastChild);
+	}
+	element.appendChild(content);
+}
+
+function records(tracks) {
 	var table = document.createElement("table");
 	var head = table.createTHead().insertRow(0);
 	head.insertCell(0).innerHTML = "Class";
@@ -68,12 +75,10 @@ function display(tracks) {
 		row.insertCell(1).innerHTML = item.Name;
 		row.insertCell(2).innerHTML = duration(item.Active);
 	});
-	var records = document.getElementById("records");
-	while (records.hasChildNodes()) {
-		records.removeChild(records.lastChild);
-	}
-	records.appendChild(table);
+	replace(document.getElementById("records"), table);
+}
 
+function classes(tracks) {
 	var table = document.createElement("table");
 	var classMap = overview(tracks);
 	var total = 0;
@@ -88,11 +93,12 @@ function display(tracks) {
 	var d = totalRow.insertCell(1);
 	d.id = "total";
 	d.innerHTML = duration(total);
-	var classes = document.getElementById("classes");
-	while (classes.hasChildNodes()) {
-		classes.removeChild(classes.lastChild);
-	}
-	classes.appendChild(table);
+	replace(document.getElementById("classes"), table);
+}
+
+function display(tracks) {
+	records(tracks);
+	classes(tracks);
 }
 
 function clearStorage() {
