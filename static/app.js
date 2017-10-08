@@ -84,7 +84,7 @@ function classes(tracks) {
 		row.insertCell(1).innerHTML = duration(value);
 	});
 	var totalRow = table.insertRow(-1);
-	totalRow.insertCell(0).innerHTML = "Total";
+	totalRow.insertCell(0).innerHTML = "&Sigma;";
 	var d = totalRow.insertCell(1);
 	d.id = "total";
 	d.innerHTML = duration(total);
