@@ -27,16 +27,6 @@ function removeOld(tracks, h) {
 	});
 }
 
-function overview(tracks) {
-	var m = new Map();
-	tracks.map(function(item) {
-		var v = m.get(item.Class);
-		v = v ? v : 0;
-		m.set(item.Class, v + item.Active);
-	});
-	return m;
-}
-
 function update(data) {
 	var tracks = loadTracks()
 	var seen = false;
@@ -80,13 +70,18 @@ function records(tracks) {
 
 function classes(tracks) {
 	var table = document.createElement("table");
-	var classMap = overview(tracks);
 	var total = 0;
-	classMap.forEach(function(value, key) {
+	var m = new Map();
+	tracks.map(function(item) {
+		var v = m.get(item.Class);
+		v = v ? v : 0;
+		m.set(item.Class, v + item.Active);
+		total += item.Active;
+	});
+	m.forEach(function(value, key) {
 		var row = table.insertRow(-1);
 		row.insertCell(0).innerHTML = key;
 		row.insertCell(1).innerHTML = duration(value);
-		total += value;
 	});
 	var totalRow = table.insertRow(-1);
 	totalRow.insertCell(0).innerHTML = "Total";
@@ -101,7 +96,7 @@ function display(tracks) {
 	classes(tracks);
 }
 
-function clearStorage() {
+function clear() {
 	localStorage.clear();
 }
 
