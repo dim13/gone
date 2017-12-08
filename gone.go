@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/dim13/gone/internal/sse"
+	"github.com/dim13/gone/internal/xorg"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 	)
 	flag.Parse()
 
-	X, err := Connect(*display)
+	X, err := xorg.Connect(*display)
 	if err != nil {
 		log.Fatal(err)
 	}

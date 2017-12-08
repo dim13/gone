@@ -1,5 +1,5 @@
-// Gone Time Tracker -or- Where has my time gone?
-package main
+// Package xorg implements Xorg bindings
+package xorg
 
 import (
 	"bytes"

@@ -5,12 +5,13 @@ import (
 	"time"
 
 	"github.com/dim13/gone/internal/sse"
+	"github.com/dim13/gone/internal/xorg"
 )
 
 // App holds application context
 type App struct {
 	broker  sse.Broker
-	current Window
+	current xorg.Window
 	seen    time.Time
 }
 
@@ -37,7 +38,7 @@ func (a *App) sendEvent(idle time.Duration) error {
 }
 
 // Seen Window event handler
-func (a *App) Seen(w Window) error {
+func (a *App) Seen(w xorg.Window) error {
 	defer func() {
 		a.seen = time.Now()
 		a.current = w
