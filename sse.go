@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 type msg struct {
@@ -62,9 +63,12 @@ func (b Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		default:
 			if ev.event != "" {
-				fmt.Fprintf(w, "event: %s\n", ev.event)
+				fmt.Fprintln(w, "event:", ev.event)
 			}
-			fmt.Fprintf(w, "data: %s\n\n", ev.data)
+			for _, data := range strings.Split(ev.data, "\n") {
+				fmt.Fprintln(w, "data:", data)
+			}
+			fmt.Fprintln(w, "")
 			flusher.Flush()
 		}
 	}
