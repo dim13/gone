@@ -1,4 +1,5 @@
-package main
+// Package sse implements server-sent events (HTML5)
+package sse
 
 import (
 	"encoding/json"

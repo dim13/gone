@@ -8,6 +8,8 @@ import (
 	"flag"
 	"log"
 	"os"
+
+	"github.com/dim13/gone/internal/sse"
 )
 
 func main() {
@@ -23,7 +25,7 @@ func main() {
 	}
 	defer X.Close()
 
-	app := NewApp(NewBroker())
+	app := NewApp(sse.NewBroker())
 
 	go X.Collect(app)
 

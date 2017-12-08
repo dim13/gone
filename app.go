@@ -3,11 +3,13 @@ package main
 import (
 	"net/http"
 	"time"
+
+	"github.com/dim13/gone/internal/sse"
 )
 
 // App holds application context
 type App struct {
-	broker  Broker
+	broker  sse.Broker
 	current Window
 	seen    time.Time
 }
@@ -20,7 +22,7 @@ type seenEvent struct {
 }
 
 // NewApp creates a new application insctance
-func NewApp(b Broker) *App {
+func NewApp(b sse.Broker) *App {
 	return &App{broker: b, seen: time.Now()}
 }
 
