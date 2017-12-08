@@ -67,7 +67,6 @@ func (a *App) Idle(idle time.Duration) error {
 
 // ListenAndServe launches http server
 func (a *App) Serve(l net.Listener) error {
-	log.Println("serve at", l.Addr())
 	http.Handle("/", http.FileServer(Dir(true, "/public")))
 	http.Handle("/events", a.broker)
 	return http.Serve(l, nil)
