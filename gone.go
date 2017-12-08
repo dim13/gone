@@ -5,14 +5,15 @@ package main
 //go:generate esc -ignore '^\..*' -o public.go public/
 
 import (
-	"flag"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/dim13/gone/internal/sse"
 	"github.com/dim13/gone/internal/xorg"
+	"github.com/zserge/webview"
 )
 
 // App holds application context
@@ -65,30 +66,30 @@ func (a *App) Idle(idle time.Duration) error {
 }
 
 // ListenAndServe launches http server
-func (a *App) ListenAndServe(addr string) error {
+func (a *App) Serve(l net.Listener) error {
+	log.Println("serve at", l.Addr())
 	http.Handle("/", http.FileServer(Dir(true, "/public")))
 	http.Handle("/events", a.broker)
-	return http.ListenAndServe(addr, nil)
+	return http.Serve(l, nil)
 }
 
 func main() {
-	var (
-		display = flag.String("display", os.Getenv("DISPLAY"), "X11 display")
-		listen  = flag.String("listen", "127.0.0.1:8001", "web reporter")
-	)
-	flag.Parse()
-
-	X, err := xorg.Connect(*display)
+	X, err := xorg.Connect(os.Getenv("DISPLAY"))
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer X.Close()
 
 	app := NewApp(sse.NewBroker())
-
 	go X.Collect(app)
 
-	if err := app.ListenAndServe(*listen); err != nil {
+	l, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
 		log.Fatal(err)
 	}
+	defer l.Close()
+	go app.Serve(l)
+
+	addr := "http://" + l.Addr().String()
+	webview.Open("Gone", addr, 800, 600, false)
 }

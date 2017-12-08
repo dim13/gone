@@ -7,9 +7,15 @@
   packages = [".","screensaver","xproto"]
   revision = "27f122750802c950b2c869a5b63dafcf590ced95"
 
+[[projects]]
+  branch = "master"
+  name = "github.com/zserge/webview"
+  packages = ["."]
+  revision = "379a92f9055d6371daac45a136b673adaba133e4"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c75befe8da1bc6340b7049d2b6232c9aac3f562483ab81cab442d64e9e03e685"
+  inputs-digest = "970953b7a524732f7d4db75f6aa6e188863ad0b371dd5c9f5cca3ec23f8c7114"
   solver-name = "gps-cdcl"
   solver-version = 1

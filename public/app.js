@@ -9,17 +9,6 @@ function duration(ns) {
 	return ((d > 0) ? d + "d" : "") + ((h > 0) ? h + "h" : "") + ((m > 0) ? m + "m" : "") + s + "s";
 }
 
-function loadTracks() {
-	var tracks = JSON.parse(localStorage.getItem("tracks"));
-	tracks = tracks ? tracks : new Array();
-	return removeOld(tracks, 8);
-}
-
-function storeTracks(tracks) {
-	localStorage.setItem("tracks", JSON.stringify(tracks));
-	return tracks;
-}
-
 function removeOld(tracks, h) {
 	var t = Date.now() - (h * 60 * 60 * 1000);
 	return tracks.filter(function(item) {
@@ -27,8 +16,7 @@ function removeOld(tracks, h) {
 	});
 }
 
-function update(data) {
-	var tracks = loadTracks()
+function update(tracks, data) {
 	var seen = false;
 	tracks.map(function(item) {
 		if (item.Class == data.Class && item.Name == data.Name) {
@@ -43,7 +31,6 @@ function update(data) {
 	tracks.sort(function(a, b) {
 		return b.Active - a.Active;
 	});
-	return storeTracks(tracks);
 }
 
 function replace(element, content) {
@@ -96,18 +83,14 @@ function display(tracks) {
 	classes(tracks);
 }
 
-function clear() {
-	localStorage.clear();
-}
+var stream = new EventSource("events");
+var tracks = new Array();
 
-document.addEventListener('DOMContentLoaded', function() {
-	var tracks = loadTracks();
+stream.addEventListener("seen", function(e) {
+	update(tracks, JSON.parse(e.data));
 	display(tracks);
 });
 
-var stream = new EventSource("events");
-
-stream.addEventListener("seen", function(e) {
-	var tracks = update(JSON.parse(e.data));
+document.addEventListener('DOMContentLoaded', function() {
 	display(tracks);
 });
