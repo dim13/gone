@@ -30,11 +30,6 @@ type seenEvent struct {
 	Active time.Duration
 }
 
-// NewApp creates a new application insctance
-func NewApp(b sse.Broker) *App {
-	return &App{broker: b, seen: time.Now()}
-}
-
 func (a *App) sendEvent(idle time.Duration) error {
 	ev := seenEvent{
 		Class:  a.current.Class,
@@ -67,26 +62,30 @@ func (a *App) Idle(idle time.Duration) error {
 
 // Serve launches http server
 func (a *App) Serve(l net.Listener) error {
+	log.Println("listen on", l.Addr())
 	http.Handle("/", http.FileServer(Dir(true, "/public")))
 	http.Handle("/events", a.broker)
 	return http.Serve(l, nil)
 }
 
 func main() {
+	l, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer l.Close()
+
 	X, err := xorg.Connect(os.Getenv("DISPLAY"))
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer X.Close()
 
-	app := NewApp(sse.NewBroker())
-	go X.Collect(app)
-
-	l, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		log.Fatal(err)
+	app := &App{
+		broker: sse.NewBroker(),
+		seen:   time.Now(),
 	}
-	defer l.Close()
+	go X.Collect(app)
 	go app.Serve(l)
 
 	addr := "http://" + l.Addr().String()
