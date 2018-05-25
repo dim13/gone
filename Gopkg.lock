@@ -4,18 +4,22 @@
 [[projects]]
   branch = "master"
   name = "github.com/BurntSushi/xgb"
-  packages = [".","screensaver","xproto"]
+  packages = [
+    ".",
+    "screensaver",
+    "xproto"
+  ]
   revision = "27f122750802c950b2c869a5b63dafcf590ced95"
 
 [[projects]]
   branch = "master"
   name = "github.com/zserge/webview"
   packages = ["."]
-  revision = "379a92f9055d6371daac45a136b673adaba133e4"
+  revision = "016c6ffd99f3ba915aea2b026d17e0918322f99b"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "970953b7a524732f7d4db75f6aa6e188863ad0b371dd5c9f5cca3ec23f8c7114"
+  inputs-digest = "79b33b1fbbc57eb3c3b1f2aa0c7c36220b26d5fe23c8d6f96a7a2e2dc01eb906"
   solver-name = "gps-cdcl"
   solver-version = 1
