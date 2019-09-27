@@ -42,15 +42,16 @@ function replace(element, content) {
 
 function records(tracks) {
 	var table = document.createElement("table");
-	var head = table.createTHead().insertRow(0);
-	head.insertCell(0).innerHTML = "Class";
-	head.insertCell(1).innerHTML = "Name";
-	head.insertCell(2).innerHTML = "Spent";
+	table.className = "table table-striped";
+	var head = table.createTHead().insertRow();
+	head.insertCell().innerHTML = "Class";
+	head.insertCell().innerHTML = "Name";
+	head.insertCell().innerHTML = "Spent";
 	tracks.map(function(item) {
 		var row = table.insertRow(-1);
-		row.insertCell(0).innerHTML = item.Class;
-		row.insertCell(1).innerHTML = item.Name;
-		row.insertCell(2).innerHTML = duration(item.Active);
+		row.insertCell().innerHTML = item.Class;
+		row.insertCell().innerHTML = item.Name;
+		row.insertCell().innerHTML = duration(item.Active);
 	});
 	replace(document.getElementById("records"), table);
 }
@@ -67,11 +68,11 @@ function classes(tracks) {
 	});
 	m.forEach(function(value, key) {
 		var row = table.insertRow(-1);
-		row.insertCell(0).innerHTML = key;
-		row.insertCell(1).innerHTML = duration(value);
+		row.insertCell().innerHTML = key;
+		row.insertCell().innerHTML = duration(value);
 	});
 	var totalRow = table.insertRow(-1);
-	totalRow.insertCell(0).innerHTML = "&Sigma;";
+	totalRow.insertCell().innerHTML = "&Sigma;";
 	var d = totalRow.insertCell(1);
 	d.id = "total";
 	d.innerHTML = duration(total);

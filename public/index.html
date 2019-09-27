@@ -3,16 +3,38 @@
 	<head>
 		<title>Gone</title>
 		<meta charset="utf-8">
-		<link rel="stylesheet" href="style.css" type="text/css">
-		<link rel="icon" href="favicon.ico" type="image/x-icon">
-		<script src="app.js" type="text/javascript"></script>
+		<!--link rel="icon" href="favicon.ico" type="image/x-icon"-->
+		<!--link rel="stylesheet" href="css/bootstrap.min.css" type="text/css"-->
+		<!--script src="app.js" type="text/javascript"></script-->
+		<script>
+			function arrayToTable(arr) {
+				var table = document.createElement("table");
+				table.className = "table table-striped";
+				var head = table.createTHead().insertRow();
+				head.insertCell().innerHTML = "Class";
+				head.insertCell().innerHTML = "Title";
+				head.insertCell().innerHTML = "Spent";
+				arr.forEach(function(item) {
+					var row = table.insertRow(-1);
+					row.insertCell().innerHTML = item.Class;
+					row.insertCell().innerHTML = item.Title;
+					row.insertCell().innerHTML = item.Spent;
+				});
+				return table;
+			}
+			function replace(element, content) {
+				while (element.hasChildNodes()) {
+					element.removeChild(element.lastChild);
+				}
+				element.appendChild(content);
+			}
+			function updateTable() {
+				replace(document.getElementById("records"), arrayToTable(ui.data.Records));
+			}
+		</script>
 	</head>
 	<body>
-		<aside id="box">
-			<div id="classes"></div>
-		</aside>
-		<section id="content">
-			<div id="records"></div>
-		</section>
+		<div id="records"></div>
+		<div id="classes"></div>
 	</body>
 </html>
