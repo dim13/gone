@@ -1,8 +1,6 @@
 // Gone Time Tracker -or- Where has my time gone?
 package main
 
-//go:generate esc -o static.go static/
-
 import (
 	"encoding/gob"
 	"flag"

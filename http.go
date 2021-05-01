@@ -2,6 +2,7 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -40,10 +41,8 @@ type Duration time.Duration
 
 var tmpl *template.Template
 
-func init() {
-	t := FSMustString(false, "/static/gone.tmpl")
-	tmpl = template.Must(template.New("").Parse(t))
-}
+//go:embed static
+var static embed.FS
 
 func (r Records) Len() int           { return len(r) }
 func (r Records) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
@@ -86,8 +85,12 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Sort(sort.Reverse(idx.Classes))
 	sort.Sort(sort.Reverse(idx.Records))
-	err := tmpl.ExecuteTemplate(w, "root", idx)
+
+	tmpl, err := template.ParseFS(static, "static/gone.tmpl")
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	if err := tmpl.ExecuteTemplate(w, "root", idx); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
