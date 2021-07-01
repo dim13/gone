@@ -9,15 +9,15 @@ Where has my time gone? X11 automatic work activity tracker in pure Go.
 Synopsis
 --------
 
-_Gone_ performs automatic time accounting on EWMH capable Window Managers
-by looking at _NET_ACTIVE_WINDOW and storing time spent on a particular
-application.
+_Gone_ performs automatic time accounting on
+[EWMH](https://specifications.freedesktop.org/wm-spec/latest/) capable Window
+Managers by looking at _NET_ACTIVE_WINDOW and storing time spent on a
+particular application.
 
-_Gone_ is aware of ScreenSaver and suspends accounting if ScreenSaver
-triggers.
+_Gone_ is aware of ScreenSaver and suspends accounting if ScreenSaver triggers.
 
-As fallback (see caveats) _gone_ also stops at user inactivity.
-The inactive time is counted separated.
+As fallback (see caveats) _gone_ also stops at user inactivity.  The inactive
+time is counted separated.
 
 Results are presented at [http://localhost:8001/](http://localhost:8001/)
 
@@ -33,8 +33,8 @@ Caveats
 
 * For _xmonad_ Window Manager _EwmhDesktop_ extension is required.
 
-* _xscreensaver_ seems to ignore MIT-SCREEN-SAVER extension.
-Use xidle/xlock instead and/or activate X11 ScreenSaver:
+* _xscreensaver_ seems to ignore MIT-SCREEN-SAVER extension.  Use xidle/xlock
+  instead and/or activate X11 ScreenSaver:
 
     xset s default
 
