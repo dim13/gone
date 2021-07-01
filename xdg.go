@@ -15,7 +15,7 @@ func CachePath() string {
 }
 
 func ConfigPath() string {
-	if p := os.Getenv("XDG_CANFIG_HOME"); p != "" {
+	if p := os.Getenv("XDG_CONFIG_HOME"); p != "" {
 		return p
 	}
 	return os.ExpandEnv(path.Join("$HOME", ".config"))
