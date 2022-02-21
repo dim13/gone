@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"sort"
 	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 type Index struct {
@@ -44,14 +45,6 @@ var tmpl *template.Template
 //go:embed static
 var static embed.FS
 
-func (r Records) Len() int           { return len(r) }
-func (r Records) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
-func (r Records) Less(i, j int) bool { return r[i].Spent < r[j].Spent }
-
-func (c Classes) Len() int           { return len(c) }
-func (c Classes) Swap(i, j int)      { c[i], c[j] = c[j], c[i] }
-func (c Classes) Less(i, j int) bool { return c[i].Spent < c[j].Spent }
-
 func (d Duration) String() string {
 	return fmt.Sprint(time.Duration(d).Truncate(time.Second))
 }
@@ -75,16 +68,19 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 			Class: k.Class,
 			Name:  k.Name,
 			Spent: Duration(v.Spent),
-			Idle:  Duration(v.Idle)})
+			Idle:  Duration(v.Idle),
+		})
 	}
+	slices.SortFunc(idx.Records, func(a, b Record) bool { return a.Spent > b.Spent })
+
 	for k, v := range classes {
 		idx.Classes = append(idx.Classes, Class{
 			Class:   k,
 			Spent:   Duration(v),
-			Percent: 100.0 * float64(v) / float64(idx.Total)})
+			Percent: 100.0 * float64(v) / float64(idx.Total),
+		})
 	}
-	sort.Sort(sort.Reverse(idx.Classes))
-	sort.Sort(sort.Reverse(idx.Records))
+	slices.SortFunc(idx.Classes, func(a, b Class) bool { return a.Spent > b.Spent })
 
 	tmpl, err := template.ParseFS(static, "static/gone.tmpl")
 	if err != nil {
