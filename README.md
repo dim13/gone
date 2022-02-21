@@ -11,7 +11,7 @@ Synopsis
 
 _Gone_ performs automatic time accounting on
 [EWMH](https://specifications.freedesktop.org/wm-spec/latest/) capable Window
-Managers by looking at _NET_ACTIVE_WINDOW and storing time spent on a
+Managers by looking at _NET_ACTIVE_WINDOW atom and storing time spent on a
 particular application.
 
 _Gone_ is aware of ScreenSaver and suspends accounting if ScreenSaver triggers.
