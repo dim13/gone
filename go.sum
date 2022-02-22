@@ -1,2 +1,2 @@
-github.com/BurntSushi/xgb v0.0.0-20210121224620-deaf085860bc h1:7D+Bh06CRPCJO3gr2F7h1sriovOZ8BMhca2Rg85c2nk=
-github.com/BurntSushi/xgb v0.0.0-20210121224620-deaf085860bc/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
+github.com/jezek/xgb v1.0.0 h1:s2rRzAV8KQRlpsYA7Uyxoidv1nodMF0m6dIG6FhhVLQ=
+github.com/jezek/xgb v1.0.0/go.mod h1:nrhwO0FX/enq75I7Y7G8iN1ubpSGZEiA3v9e9GyRFlk=

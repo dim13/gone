@@ -7,9 +7,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/BurntSushi/xgb"
-	"github.com/BurntSushi/xgb/screensaver"
-	"github.com/BurntSushi/xgb/xproto"
+	"github.com/jezek/xgb"
+	"github.com/jezek/xgb/screensaver"
+	"github.com/jezek/xgb/xproto"
 )
 
 type Xorg struct {
