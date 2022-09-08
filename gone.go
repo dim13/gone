@@ -20,8 +20,9 @@ type Track struct {
 }
 
 var (
-	dumpFileName = path.Join(CachePath(), "gone.gob")
-	logFileName  = path.Join(CachePath(), "gone.log")
+	cacheDir, _  = os.UserCacheDir()
+	dumpFileName = path.Join(cacheDir, "gone.gob")
+	logFileName  = path.Join(cacheDir, "gone.log")
 )
 
 var (
