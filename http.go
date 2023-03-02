@@ -39,8 +39,6 @@ type Classes []Class
 
 type Duration time.Duration
 
-var tmpl *template.Template
-
 //go:embed static
 var static embed.FS
 
